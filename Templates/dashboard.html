@@ -1,0 +1,116 @@
+
+{% extends "base.html" %}
+
+{% block title %}Panel principal | BLISS{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <div>
+        <span class="eyebrow">CENTRO DE CONTROL</span>
+        <h1>¡Hola, {{ session.get('user_name', 'Productor') }}!</h1>
+        <p>Este es el resumen de tu gestión productiva.</p>
+    </div>
+
+    <a href="{{ url_for('unidades') }}" class="btn-primary">
+        + Nueva unidad productiva
+    </a>
+</section>
+
+<section class="stats-grid">
+
+    <article class="stat-card">
+        <div class="stat-icon">⌂</div>
+        <span>Unidades productivas</span>
+        <strong>{{ total_unidades }}</strong>
+        <small>Unidades registradas</small>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-icon">▦</div>
+        <span>Insumos registrados</span>
+        <strong>{{ total_insumos }}</strong>
+        <small>Elementos en inventario</small>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-icon">◷</div>
+        <span>Eventos pendientes</span>
+        <strong>0</strong>
+        <small>Próximamente conectado</small>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-icon">↗</div>
+        <span>Producción registrada</span>
+        <strong>0</strong>
+        <small>Próximamente conectado</small>
+    </article>
+
+</section>
+
+<section class="dashboard-grid">
+
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">GESTIÓN</span>
+                <h2>Tu operación</h2>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+
+            <a href="{{ url_for('unidades') }}" class="quick-action">
+                <span>01</span>
+                <div>
+                    <strong>Unidades productivas</strong>
+                    <small>Administra tus unidades</small>
+                </div>
+                <span>→</span>
+            </a>
+
+            <a href="{{ url_for('inventario') }}" class="quick-action">
+                <span>02</span>
+                <div>
+                    <strong>Inventario</strong>
+                    <small>Controla tus insumos</small>
+                </div>
+                <span>→</span>
+            </a>
+
+            <div class="quick-action">
+                <span>03</span>
+                <div>
+                    <strong>Animales y lotes</strong>
+                    <small>Gestión de especies y lotes</small>
+                </div>
+                <span>→</span>
+            </div>
+
+            <div class="quick-action">
+                <span>04</span>
+                <div>
+                    <strong>Finanzas</strong>
+                    <small>Ingresos, costos y rentabilidad</small>
+                </div>
+                <span>→</span>
+            </div>
+
+        </div>
+    </article>
+
+    <article class="panel welcome-panel">
+        <span class="eyebrow">BLISS SMART SYSTEM</span>
+        <h2>Gestiona mejor. Produce mejor.</h2>
+        <p>
+            Centraliza la información de tu producción animal y
+            convierte tus registros en decisiones más inteligentes.
+        </p>
+
+        <div class="welcome-decoration">B</div>
+    </article>
+
+</section>
+
+{% endblock %}

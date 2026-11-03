@@ -1,0 +1,92 @@
+
+{% extends "base.html" %}
+
+{% block title %}Editar lote | BLISS{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">GESTIÓN ANIMAL</span>
+        <h1>Editar lote</h1>
+        <p>Actualiza fácilmente la información de tu lote.</p>
+    </div>
+</div>
+
+<div class="panel form-panel">
+
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">INFORMACIÓN DEL LOTE</span>
+            <h2>{{ lote.name }}</h2>
+        </div>
+    </div>
+
+    <div class="form-grid">
+
+        <div class="form-group">
+            <label>Unidad productiva</label>
+            <input type="text" value="{{ lote.unidad }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label>Especie</label>
+            <input type="text" value="{{ lote.especie }}" disabled>
+        </div>
+
+    </div>
+
+    <form method="POST">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="nombre">Nombre del lote</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value="{{ lote.name }}"
+                    maxlength="120"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="cantidad">Cantidad de animales</label>
+                <input
+                    type="number"
+                    id="cantidad"
+                    name="cantidad"
+                    value="{{ lote.quantity }}"
+                    min="1"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="fecha_ingreso">Fecha de ingreso</label>
+                <input
+                    type="date"
+                    id="fecha_ingreso"
+                    name="fecha_ingreso"
+                    value="{{ lote.entry_date.strftime('%Y-%m-%d') }}"
+                    required
+                >
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Guardar cambios
+        </button>
+
+        <a href="{{ url_for('lotes') }}" class="btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

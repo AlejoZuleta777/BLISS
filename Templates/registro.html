@@ -1,0 +1,117 @@
+
+{% extends "base.html" %}
+
+{% block title %}Crear cuenta | BLISS{% endblock %}
+
+{% block public_content %}
+
+<section class="auth-page">
+    <div class="auth-decoration">
+        <a href="{{ url_for('inicio') }}" class="hero-brand">
+            <span class="brand-symbol">B</span>
+            <span>BLISS</span>
+        </a>
+
+        <div>
+            <span class="eyebrow">SMART ANIMAL PRODUCTION</span>
+            <h1>Una mejor gestión comienza con una buena decisión.</h1>
+            <p>
+                Organiza tu producción animal, controla tus recursos
+                y lleva tu unidad productiva al siguiente nivel.
+            </p>
+        </div>
+
+        <span class="auth-footer">Gestión inteligente de producción animal</span>
+    </div>
+
+    <div class="auth-form-container">
+        <div class="auth-form">
+            <a href="{{ url_for('inicio') }}" class="back-link">← Volver al inicio</a>
+
+            <span class="eyebrow">ÚNETE A BLISS</span>
+            <h2>Crear una cuenta</h2>
+            <p class="auth-description">
+                Registra tus datos para comenzar a gestionar tu producción.
+            </p>
+
+            <form method="POST" action="{{ url_for('registro') }}" data-loading>
+
+                <div class="form-group">
+                    <label for="nombre">Nombre completo</label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        placeholder="Ej. Alejandro Sánchez"
+                        maxlength="120"
+                        autocomplete="name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="correo">Correo electrónico</label>
+                    <input
+                        type="email"
+                        id="correo"
+                        name="correo"
+                        placeholder="correo@ejemplo.com"
+                        maxlength="150"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Número de teléfono</label>
+                    <input
+                        type="tel"
+                        id="telefono"
+                        name="telefono"
+                        placeholder="Ej. 3001234567"
+                        maxlength="30"
+                        autocomplete="tel"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="contrasena">Contraseña</label>
+                    <input
+                        type="password"
+                        id="contrasena"
+                        name="contrasena"
+                        placeholder="Mínimo 8 caracteres"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar">Confirmar contraseña</label>
+                    <input
+                        type="password"
+                        id="confirmar"
+                        name="confirmar"
+                        placeholder="Escribe nuevamente tu contraseña"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn-primary btn-full">
+                    Crear mi cuenta
+                </button>
+
+            </form>
+
+            <p class="auth-switch">
+                ¿Ya tienes una cuenta?
+                <a href="{{ url_for('login') }}">Inicia sesión</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

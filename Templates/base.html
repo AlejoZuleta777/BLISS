@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BLISS | Smart Animal Production{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+
+{% if session.get('user_id') %}
+
+<div class="app-layout">
+
+    <aside class="sidebar">
+
+        <a href="{{ url_for('dashboard') }}" class="hero-brand">
+            <span class="brand-symbol">B</span>
+            <span>BLISS</span>
+        </a>
+
+        <nav class="sidebar-menu">
+            <a href="{{ url_for('dashboard') }}">▦ Panel principal</a>
+            <a href="{{ url_for('unidades') }}">⌂ Unidades productivas</a>
+            <a href="{{ url_for('lotes') }}">◉ Animales y lotes</a>
+            <a href="#">♧ Alimentación y salud</a>
+            <a href="{{ url_for('inventario') }}">▤ Inventario</a>
+            <a href="#">↗ Producción</a>
+            <a href="#">$ Finanzas</a>
+            <a href="#">▧ Reportes</a>
+        </nav>
+
+        <div class="sidebar-user">
+            <strong>{{ session.get('user_name', 'Productor') }}</strong>
+            <small>Cuenta de productor</small>
+            <a href="{{ url_for('logout') }}">Cerrar sesión →</a>
+        </div>
+
+    </aside>
+
+    <div class="main-area">
+
+        <header class="topbar">
+            <span>BLISS / Gestión inteligente</span>
+            <span>SMART ANIMAL PRODUCTION</span>
+        </header>
+
+        <main class="content">
+
+            {% with mensajes = get_flashed_messages(with_categories=true) %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="flash {{ categoria }}">{{ mensaje }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+
+        </main>
+
+    </div>
+
+</div>
+
+{% else %}
+
+{% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+        <div class="flash {{ categoria }}">{{ mensaje }}</div>
+    {% endfor %}
+{% endwith %}
+
+{% block public_content %}{% endblock %}
+
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>

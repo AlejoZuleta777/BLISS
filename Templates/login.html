@@ -1,0 +1,89 @@
+
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | BLISS{% endblock %}
+
+{% block public_content %}
+
+<section class="auth-page">
+
+    <div class="auth-decoration">
+        <a href="{{ url_for('inicio') }}" class="hero-brand">
+            <span class="brand-symbol">B</span>
+            <span>BLISS</span>
+        </a>
+
+        <div>
+            <span class="eyebrow">SMART ANIMAL PRODUCTION</span>
+            <h1>Tu producción, tus datos y tus decisiones en un solo lugar.</h1>
+            <p>
+                Accede a tu espacio de trabajo y continúa gestionando
+                tu unidad productiva con BLISS.
+            </p>
+        </div>
+
+        <span class="auth-footer">
+            Gestión inteligente de producción animal
+        </span>
+    </div>
+
+    <div class="auth-form-container">
+        <div class="auth-form">
+
+            <a href="{{ url_for('inicio') }}" class="back-link">
+                ← Volver al inicio
+            </a>
+
+            <span class="eyebrow">BIENVENIDO DE NUEVO</span>
+
+            <h2>Iniciar sesión</h2>
+
+            <p class="auth-description">
+                Ingresa tus credenciales para acceder a tu cuenta.
+            </p>
+
+            <form method="POST" action="{{ url_for('login') }}" data-loading>
+
+                <div class="form-group">
+                    <label for="correo">Correo electrónico</label>
+
+                    <input
+                        type="email"
+                        id="correo"
+                        name="correo"
+                        placeholder="correo@ejemplo.com"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="contrasena">Contraseña</label>
+
+                    <input
+                        type="password"
+                        id="contrasena"
+                        name="contrasena"
+                        placeholder="Ingresa tu contraseña"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn-primary btn-full">
+                    Ingresar a BLISS
+                </button>
+
+            </form>
+
+            <p class="auth-switch">
+                ¿Todavía no tienes una cuenta?
+                <a href="{{ url_for('registro') }}">Regístrate aquí</a>
+            </p>
+
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+
+{% extends "base.html" %}
+
+{% block title %}BLISS | Gestión inteligente de producción animal{% endblock %}
+
+{% block public_content %}
+
+<section class="hero">
+    <nav class="hero-nav">
+        <a href="{{ url_for('inicio') }}" class="hero-brand">
+            <span class="brand-symbol">B</span>
+            <span>BLISS</span>
+        </a>
+
+        <div class="hero-links">
+            <a href="{{ url_for('login') }}">Iniciar sesión</a>
+            <a href="{{ url_for('registro') }}" class="btn-primary">Crear cuenta</a>
+        </div>
+    </nav>
+
+    <div class="hero-content">
+        <span class="eyebrow">SMART ANIMAL PRODUCTION</span>
+
+        <h1>El futuro de la<br>
+            <span>producción animal</span><br>
+            comienza aquí.
+        </h1>
+
+        <p>
+            Gestiona tus unidades productivas, controla tus animales,
+            administra tus recursos y toma mejores decisiones desde
+            una sola plataforma.
+        </p>
+
+        <div class="hero-actions">
+            <a href="{{ url_for('registro') }}" class="btn-primary">
+                Comenzar ahora
+            </a>
+
+            <a href="{{ url_for('login') }}" class="btn-secondary">
+                Ya tengo una cuenta
+            </a>
+        </div>
+    </div>
+
+    <div class="hero-footer">
+        <span>BLISS</span>
+        <span>Gestión inteligente de producción animal</span>
+        <span>© 2026</span>
+    </div>
+</section>
+
+{% endblock %}

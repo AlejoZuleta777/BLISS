@@ -1,0 +1,170 @@
+
+{% extends "base.html" %}
+
+{% block title %}Animales y lotes | BLISS{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">GESTIÓN ANIMAL</span>
+        <h1>Animales y lotes</h1>
+        <p>Administra las especies y los lotes de tus unidades productivas.</p>
+    </div>
+</div>
+
+<div class="panel form-panel">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">NUEVO REGISTRO</span>
+            <h2>Registrar lote</h2>
+        </div>
+    </div>
+
+    {% if unidades %}
+    <form method="POST" action="{{ url_for('lotes') }}">
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="unidad_id">Unidad productiva *</label>
+                <select id="unidad_id" name="unidad_id" required>
+                    <option value="">Selecciona una unidad</option>
+                    {% for unidad in unidades %}
+                    <option value="{{ unidad.id }}">
+                        {{ unidad.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="especie_id">Especie *</label>
+                <select id="especie_id" name="especie_id" required>
+                    <option value="">Selecciona una especie</option>
+                    {% for especie in especies %}
+                    <option value="{{ especie.id }}">
+                        {{ especie.name }} — {{ especie.production_type }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nombre">Nombre del lote *</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    placeholder="Ej. Lote de producción 01"
+                    maxlength="100"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="cantidad">Cantidad de animales *</label>
+                <input
+                    type="number"
+                    id="cantidad"
+                    name="cantidad"
+                    min="1"
+                    placeholder="Ej. 50"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="fecha_ingreso">Fecha de ingreso *</label>
+                <input
+                    type="date"
+                    id="fecha_ingreso"
+                    name="fecha_ingreso"
+                    required
+                >
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Registrar lote
+        </button>
+    </form>
+
+    {% else %}
+    <div class="empty-state">
+        <span>⌂</span>
+        <h3>Primero registra una unidad productiva</h3>
+        <p>Necesitas una unidad productiva para poder crear un lote.</p>
+        <a href="{{ url_for('unidades') }}" class="btn-primary">
+            Registrar unidad
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="panel">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">REGISTROS</span>
+            <h2>Lotes registrados</h2>
+        </div>
+        <span class="record-count">
+            {{ lotes|length }} lotes
+        </span>
+    </div>
+
+    {% if lotes %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Especie</th>
+                    <th>Unidad productiva</th>
+                    <th>Cantidad</th>
+                    <th>Fecha de ingreso</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            
+<tbody>
+    {% for lote in lotes %}
+    <tr>
+        <td><strong>{{ lote.name }}</strong></td>
+        <td>{{ lote.especie }}</td>
+        <td>{{ lote.unidad }}</td>
+        <td>{{ lote.quantity }}</td>
+        <td>{{ lote.entry_date }}</td>
+
+        <!-- Estado del lote -->
+        <td>
+            <span class="stock-ok">{{ lote.status }}</span>
+        </td>
+
+        <!-- Acciones -->
+        <td>
+            <a
+                href="{{ url_for('editar_lote', lote_id=lote.id) }}"
+                class="btn-primary"
+            >
+                Editar
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+        </table>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <span>◉</span>
+        <h3>Aún no tienes lotes registrados</h3>
+        <p>Cuando registres tu primer lote, aparecerá aquí.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

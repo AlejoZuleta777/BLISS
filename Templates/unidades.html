@@ -1,0 +1,114 @@
+
+{% extends "base.html" %}
+
+{% block title %}Unidades productivas | BLISS{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <div>
+        <span class="eyebrow">GESTIÓN PRODUCTIVA</span>
+        <h1>Unidades productivas</h1>
+        <p>Administra los espacios donde desarrollas tu producción animal.</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">NUEVO REGISTRO</span>
+            <h2>Registrar unidad productiva</h2>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('unidades') }}" class="form-grid" data-loading>
+
+        <div class="form-group">
+            <label for="nombre">Nombre de la unidad</label>
+            <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                placeholder="Ej. Finca El Paraíso"
+                maxlength="120"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="tipo">Tipo de producción</label>
+            <select id="tipo" name="tipo" required>
+                <option value="">Selecciona una opción</option>
+                <option value="GANADERIA">Ganadería</option>
+                <option value="AVICULTURA">Avicultura</option>
+                <option value="PISCICULTURA">Piscicultura</option>
+                <option value="PORCICULTURA">Porcicultura</option>
+                <option value="EQUINOS">Equinos</option>
+                <option value="OTRA">Otra</option>
+            </select>
+        </div>
+
+        <div class="form-group form-full">
+            <label for="ubicacion">Ubicación</label>
+            <input
+                type="text"
+                id="ubicacion"
+                name="ubicacion"
+                placeholder="Municipio, departamento o dirección"
+                maxlength="180"
+            >
+        </div>
+
+        <div class="form-full">
+            <button type="submit" class="btn-primary">
+                Guardar unidad productiva
+            </button>
+        </div>
+
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">TUS REGISTROS</span>
+            <h2>Unidades registradas</h2>
+        </div>
+
+        <span class="record-count">{{ unidades|length }} unidades</span>
+    </div>
+
+    {% if unidades %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Producción</th>
+                        <th>Ubicación</th>
+                        <th>Fecha de registro</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for unidad in unidades %}
+                    <tr>
+                        <td><strong>{{ unidad.name }}</strong></td>
+                        <td>{{ unidad.production_type }}</td>
+                        <td>{{ unidad.location or 'No especificada' }}</td>
+                        <td>{{ unidad.created_at.strftime('%d/%m/%Y') if unidad.created_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span>⌂</span>
+            <h3>Aún no tienes unidades productivas</h3>
+            <p>Registra tu primera unidad para comenzar a organizar tu producción.</p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

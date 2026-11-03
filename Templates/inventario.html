@@ -1,0 +1,161 @@
+
+{% extends "base.html" %}
+
+{% block title %}Inventario | BLISS{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <div>
+        <span class="eyebrow">CONTROL DE RECURSOS</span>
+        <h1>Inventario</h1>
+        <p>Administra los insumos y recursos de tus unidades productivas.</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">NUEVO REGISTRO</span>
+            <h2>Agregar insumo</h2>
+        </div>
+    </div>
+
+    {% if unidades %}
+    <form method="POST" action="{{ url_for('inventario') }}" class="form-grid" data-loading>
+
+        <div class="form-group">
+            <label for="unidad_id">Unidad productiva</label>
+            <select id="unidad_id" name="unidad_id" required>
+                <option value="">Selecciona una unidad</option>
+                {% for unidad in unidades %}
+                <option value="{{ unidad.id }}">{{ unidad.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="nombre">Nombre del insumo</label>
+            <input type="text" id="nombre" name="nombre"
+                   placeholder="Ej. Concentrado para animales"
+                   maxlength="120" required>
+        </div>
+
+        <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" name="categoria" required>
+                <option value="">Selecciona una categoría</option>
+                <option value="ALIMENTO">Alimento</option>
+                <option value="MEDICAMENTO">Medicamento</option>
+                <option value="HERRAMIENTA">Herramienta</option>
+                <option value="LIMPIEZA">Limpieza</option>
+                <option value="OTRO">Otro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="cantidad">Cantidad inicial</label>
+            <input type="number" id="cantidad" name="cantidad"
+                   min="0" step="0.01" placeholder="Ej. 50" required>
+        </div>
+
+        <div class="form-group">
+            <label for="unidad_medida">Unidad de medida</label>
+            <select id="unidad_medida" name="unidad_medida" required>
+                <option value="kg">Kilogramos (kg)</option>
+                <option value="litros">Litros</option>
+                <option value="unidades">Unidades</option>
+                <option value="bultos">Bultos</option>
+                <option value="sacos">Sacos</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="cantidad_minima">Stock mínimo</label>
+            <input type="number" id="cantidad_minima" name="cantidad_minima"
+                   min="0" step="0.01" value="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="costo">Costo por unidad (COP)</label>
+            <input type="number" id="costo" name="costo"
+                   min="0" step="0.01" value="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="vencimiento">Fecha de vencimiento (opcional)</label>
+            <input type="date" id="vencimiento" name="vencimiento">
+        </div>
+
+        <div class="form-full">
+            <button type="submit" class="btn-primary">
+                Guardar insumo
+            </button>
+        </div>
+
+    </form>
+    {% else %}
+    <div class="empty-state">
+        <h3>Primero registra una unidad productiva</h3>
+        <p>Necesitas una unidad para asociar tus insumos.</p>
+        <a href="{{ url_for('unidades') }}" class="btn-primary">
+            Registrar unidad
+        </a>
+    </div>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">EXISTENCIAS</span>
+            <h2>Insumos registrados</h2>
+        </div>
+        <span class="record-count">{{ inventario|length }} insumos</span>
+    </div>
+
+    {% if inventario %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Insumo</th>
+                    <th>Unidad productiva</th>
+                    <th>Categoría</th>
+                    <th>Existencias</th>
+                    <th>Stock mínimo</th>
+                    <th>Costo unitario</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventario %}
+                <tr>
+                    <td><strong>{{ item.name }}</strong></td>
+                    <td>{{ item.unit_name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.quantity }} {{ item.measurement_unit }}</td>
+                    <td>{{ item.minimum_quantity }}</td>
+                    <td>${{ "{:,.0f}".format(item.unit_cost) }}</td>
+                    <td>
+                        {% if item.quantity <= item.minimum_quantity %}
+                            <span class="stock-low">Stock bajo</span>
+                        {% else %}
+                            <span class="stock-ok">Disponible</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span>▦</span>
+        <h3>Tu inventario está vacío</h3>
+        <p>Cuando registres tus primeros insumos aparecerán aquí.</p>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}
