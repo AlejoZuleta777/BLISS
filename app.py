@@ -226,6 +226,8 @@ def dashboard():
         conexion.close()
 
 
+
+
 # ==========================================
 # EJECUTAR APLICACIÓN
 # ==========================================
@@ -692,6 +694,1025 @@ def editar_lote(lote_id):
         if conexion:
             conexion.close()
 
+# ==========================================
+# HU06 / HU07 - ALIMENTACIÓN
+# ==========================================
+
+@app.route("/alimentacion", methods=["GET", "POST"])
+@login_requerido
+def alimentacion():
+
+    conexion = None
+    cursor = None
+
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor(dictionary=True)
+
+        # ==================================
+        # REGISTRAR ALIMENTACIÓN
+        # ==================================
+
+        if request.method == "POST":
+
+            lote_id = request.form.get("lote_id", "").strip()
+            alimento = request.form.get("alimento", "").strip()
+            cantidad = request.form.get("cantidad", "").strip()
+            unidad_medida = request.form.get("unidad_medida", "").strip()
+            precio_unitario = request.form.get("precio_unitario", "").strip()
+            fecha_alimentacion = request.form.get("fecha_alimentacion", "").strip()
+            observaciones = request.form.get("observaciones", "").strip()
+
+            try:
+                lote_id = int(lote_id)
+                cantidad = float(cantidad)
+                precio_unitario = float(precio_unitario)
+
+                if (
+                    not alimento
+                    or not unidad_medida
+                    or not fecha_alimentacion
+                    or cantidad <= 0
+                    or precio_unitario < 0
+                ):
+                    raise ValueError()
+
+            except (ValueError, TypeError):
+                flash("Verifica los datos de la alimentación.", "error")
+                return redirect(url_for("alimentacion"))
+
+            # ==================================
+            # VERIFICAR LOTE
+            # ==================================
+
+            cursor.execute("""
+                SELECT
+                    l.id,
+                    l.name,
+                    l.unit_id,
+                    u.name AS unit_name
+                FROM animal_lots l
+                INNER JOIN production_units u
+                    ON l.unit_id = u.id
+                WHERE l.id = %s
+                  AND u.user_id = %s
+            """, (
+                lote_id,
+                session["user_id"]
+            ))
+
+            lote = cursor.fetchone()
+
+            if not lote:
+                flash("El lote seleccionado no es válido.", "error")
+                return redirect(url_for("alimentacion"))
+
+            # ==================================
+            # CALCULAR COSTO TOTAL
+            # ==================================
+
+            total_cost = cantidad * precio_unitario
+
+            # ==================================
+            # BUSCAR ALIMENTO EN INVENTARIO
+            # ==================================
+
+            cursor.execute("""
+                SELECT
+                    id,
+                    name,
+                    quantity,
+                    measurement_unit
+                FROM inventory_items
+                WHERE unit_id = %s
+                  AND LOWER(name) = LOWER(%s)
+                LIMIT 1
+            """, (
+                lote["unit_id"],
+                alimento
+            ))
+
+            inventario = cursor.fetchone()
+
+            if not inventario:
+                flash(
+                    f"El alimento '{alimento}' no existe en el inventario "
+                    f"de la unidad '{lote['unit_name']}'.",
+                    "error"
+                )
+                return redirect(url_for("alimentacion"))
+
+            # ==================================
+            # VALIDAR UNIDAD DE MEDIDA
+            # ==================================
+
+            if inventario["measurement_unit"] != unidad_medida:
+                flash(
+                    f"La unidad de medida del inventario es "
+                    f"'{inventario['measurement_unit']}', "
+                    f"pero estás registrando '{unidad_medida}'.",
+                    "error"
+                )
+                return redirect(url_for("alimentacion"))
+
+            # ==================================
+            # VALIDAR EXISTENCIA
+            # ==================================
+
+            cantidad_disponible = float(inventario["quantity"])
+
+            if cantidad > cantidad_disponible:
+                flash(
+                    f"No hay suficiente inventario. "
+                    f"Disponible: {cantidad_disponible:g} "
+                    f"{inventario['measurement_unit']}.",
+                    "error"
+                )
+                return redirect(url_for("alimentacion"))
+
+            # ==================================
+            # GUARDAR ALIMENTACIÓN
+            # ==================================
+
+            cursor.execute("""
+                INSERT INTO feeding_records (
+                    lot_id,
+                    feed_name,
+                    quantity,
+                    measurement_unit,
+                    unit_price,
+                    total_cost,
+                    feeding_date,
+                    notes
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                lote_id,
+                alimento,
+                cantidad,
+                unidad_medida,
+                precio_unitario,
+                total_cost,
+                fecha_alimentacion,
+                observaciones or None
+            ))
+
+            # ==================================
+            # DESCONTAR DEL INVENTARIO
+            # ==================================
+
+            nueva_cantidad = cantidad_disponible - cantidad
+
+            cursor.execute("""
+                UPDATE inventory_items
+                SET quantity = %s
+                WHERE id = %s
+            """, (
+                nueva_cantidad,
+                inventario["id"]
+            ))
+
+            # ==================================
+            # REGISTRAR MOVIMIENTO
+            # ==================================
+
+            nota_movimiento = (
+                f"Consumo de alimentación - "
+                f"Lote: {lote['name']}"
+            )
+
+            cursor.execute("""
+                INSERT INTO inventory_movements (
+                    item_id,
+                    movement_type,
+                    quantity,
+                    notes
+                )
+                VALUES (%s, %s, %s, %s)
+            """, (
+                inventario["id"],
+                "SALIDA",
+                cantidad,
+                nota_movimiento
+            ))
+
+            # ==================================
+            # CONFIRMAR TODA LA OPERACIÓN
+            # ==================================
+
+            conexion.commit()
+
+            flash(
+                f"¡Alimentación registrada correctamente! "
+                f"Costo total: ${total_cost:,.0f}. "
+                f"Inventario actualizado: {nueva_cantidad:g} "
+                f"{unidad_medida} disponibles.",
+                "success"
+            )
+
+            return redirect(url_for("alimentacion"))
+
+        # ==================================
+        # CARGAR LOTES ACTIVOS
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                l.id,
+                l.name,
+                s.name AS especie,
+                u.name AS unidad
+            FROM animal_lots l
+            INNER JOIN species s
+                ON l.species_id = s.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+              AND l.status = 'ACTIVO'
+            ORDER BY l.name
+        """, (session["user_id"],))
+
+        lotes = cursor.fetchall()
+
+        # ==================================
+        # HISTORIAL DE ALIMENTACIÓN
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                f.id,
+                f.feed_name,
+                f.quantity,
+                f.measurement_unit,
+                f.unit_price,
+                f.total_cost,
+                f.feeding_date,
+                f.notes,
+                l.name AS lote,
+                s.name AS especie,
+                u.name AS unidad
+            FROM feeding_records f
+            INNER JOIN animal_lots l
+                ON f.lot_id = l.id
+            INNER JOIN species s
+                ON l.species_id = s.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+            ORDER BY f.feeding_date DESC, f.id DESC
+        """, (session["user_id"],))
+
+        registros = cursor.fetchall()
+
+        return render_template(
+            "alimentacion.html",
+            lotes=lotes,
+            registros=registros
+        )
+
+    except mysql.connector.Error as error:
+
+        if conexion:
+            conexion.rollback()
+
+        print("Error en el módulo de alimentación:", error)
+
+        flash(
+            "No fue posible completar la operación de alimentación.",
+            "error"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conexion:
+            conexion.close()
+
+
+
+# ==========================================
+# SALUD ANIMAL
+# ==========================================
+
+@app.route("/salud", methods=["GET", "POST"])
+@login_requerido
+def salud():
+
+    conexion = None
+    cursor = None
+
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor(dictionary=True)
+
+        # ==================================
+        # REGISTRAR EVENTO SANITARIO
+        # ==================================
+
+        if request.method == "POST":
+
+            lote_id = request.form.get("lote_id", "").strip()
+            event_type = request.form.get("event_type", "").strip()
+            product_used = request.form.get("product_used", "").strip()
+            event_date = request.form.get("event_date", "").strip()
+            description = request.form.get("description", "").strip()
+
+            tipos_permitidos = [
+                "VACUNACIÓN",
+                "TRATAMIENTO",
+                "CONTROL",
+                "DESPARASITACIÓN",
+                "OTRO"
+            ]
+
+            if (
+                not lote_id
+                or not event_type
+                or not event_date
+                or event_type not in tipos_permitidos
+            ):
+                flash("Completa los campos obligatorios del evento sanitario.", "error")
+                return redirect(url_for("salud"))
+
+            try:
+                lote_id = int(lote_id)
+
+                if not product_used:
+                    product_used = None
+
+                if not description:
+                    description = None
+
+            except (ValueError, TypeError):
+                flash("Los datos ingresados no son válidos.", "error")
+                return redirect(url_for("salud"))
+
+            # ==================================
+            # VERIFICAR QUE EL LOTE PERTENEZCA
+            # AL USUARIO ACTUAL
+            # ==================================
+
+            cursor.execute("""
+                SELECT
+                    l.id,
+                    l.name,
+                    s.name AS especie,
+                    u.name AS unidad
+                FROM animal_lots l
+                INNER JOIN species s
+                    ON l.species_id = s.id
+                INNER JOIN production_units u
+                    ON l.unit_id = u.id
+                WHERE l.id = %s
+                  AND u.user_id = %s
+                  AND l.status = 'ACTIVO'
+            """, (
+                lote_id,
+                session["user_id"]
+            ))
+
+            lote = cursor.fetchone()
+
+            if not lote:
+                flash("El lote seleccionado no es válido.", "error")
+                return redirect(url_for("salud"))
+
+            # ==================================
+            # GUARDAR EVENTO SANITARIO
+            # ==================================
+
+            cursor.execute("""
+                INSERT INTO health_events (
+                    lot_id,
+                    event_type,
+                    product_used,
+                    event_date,
+                    description
+                )
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                lote_id,
+                event_type,
+                product_used,
+                event_date,
+                description
+            ))
+
+            conexion.commit()
+
+            flash(
+                f"¡Evento sanitario registrado para el lote '{lote['name']}'!",
+                "success"
+            )
+
+            return redirect(url_for("salud"))
+
+        # ==================================
+        # CARGAR LOTES ACTIVOS
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                l.id,
+                l.name,
+                s.name AS especie,
+                u.name AS unidad
+            FROM animal_lots l
+            INNER JOIN species s
+                ON l.species_id = s.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+              AND l.status = 'ACTIVO'
+            ORDER BY l.name
+        """, (session["user_id"],))
+
+        lotes = cursor.fetchall()
+
+        # ==================================
+        # HISTORIAL SANITARIO
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                h.id,
+                h.event_type,
+                h.product_used,
+                h.event_date,
+                h.description,
+                l.name AS lote,
+                s.name AS especie,
+                u.name AS unidad
+            FROM health_events h
+            INNER JOIN animal_lots l
+                ON h.lot_id = l.id
+            INNER JOIN species s
+                ON l.species_id = s.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+            ORDER BY h.event_date DESC, h.id DESC
+        """, (session["user_id"],))
+
+        registros = cursor.fetchall()
+
+        return render_template(
+            "salud.html",
+            lotes=lotes,
+            registros=registros
+        )
+
+    except mysql.connector.Error as error:
+
+        if conexion:
+            conexion.rollback()
+
+        print("Error en el módulo de salud animal:", error)
+
+        flash(
+            "No fue posible completar la operación de salud animal.",
+            "error"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conexion:
+            conexion.close()
+
+           
+# ==================================
+        # Produccion
+        # ==================================
+
+@app.route("/produccion", methods=["GET", "POST"])
+@login_requerido
+def produccion():
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+
+    user_id = session["user_id"]
+
+    if request.method == "POST":
+        lot_id = request.form.get("lot_id")
+        quantity = request.form.get("quantity")
+        measurement_unit = request.form.get("measurement_unit")
+        production_date = request.form.get("production_date")
+        notes = request.form.get("notes")
+
+        if not lot_id or not quantity or not production_date:
+            flash("Completa los campos obligatorios.", "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for("produccion"))
+
+        try:
+            # Verificar que el lote pertenezca al usuario
+            cursor.execute("""
+                SELECT l.id, l.name, l.quantity, s.name AS species
+                FROM animal_lots l
+                INNER JOIN production_units u ON l.unit_id = u.id
+                INNER JOIN species s ON l.species_id = s.id
+                WHERE l.id = %s AND u.user_id = %s
+            """, (lot_id, user_id))
+
+            lote = cursor.fetchone()
+
+            if not lote:
+                flash("El lote seleccionado no es válido.", "danger")
+            else:
+                cursor.execute("""
+                    INSERT INTO production_records
+                    (lot_id, quantity, measurement_unit, production_date, notes)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    lot_id,
+                    quantity,
+                    measurement_unit,
+                    production_date,
+                    notes
+                ))
+
+                conn.commit()
+                flash("Producción registrada correctamente.", "success")
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error al registrar la producción: {str(e)}", "danger")
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        return redirect(url_for("produccion"))
+
+    # Lotes del usuario
+    cursor.execute("""
+        SELECT 
+            l.id,
+            l.name,
+            l.quantity,
+            s.name AS species,
+            u.name AS unit_name
+        FROM animal_lots l
+        INNER JOIN production_units u ON l.unit_id = u.id
+        INNER JOIN species s ON l.species_id = s.id
+        WHERE u.user_id = %s
+        ORDER BY l.name
+    """, (user_id,))
+
+    lotes = cursor.fetchall()
+
+    # Historial de producción
+    cursor.execute("""
+        SELECT
+            p.id,
+            p.quantity,
+            p.measurement_unit,
+            p.production_date,
+            p.notes,
+            l.name AS lot_name,
+            s.name AS species
+        FROM production_records p
+        INNER JOIN animal_lots l ON p.lot_id = l.id
+        INNER JOIN species s ON l.species_id = s.id
+        INNER JOIN production_units u ON l.unit_id = u.id
+        WHERE u.user_id = %s
+        ORDER BY p.production_date DESC, p.id DESC
+    """, (user_id,))
+
+    producciones = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "produccion.html",
+        lotes=lotes,
+        producciones=producciones
+    )
+
+# ==================================
+        # Finanzas
+        # ==================================
+
+@app.route("/finanzas")
+def finanzas():
+    conexion = None
+    cursor = None
+
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor(dictionary=True)
+
+        # Unidades productivas
+        cursor.execute("""
+            SELECT id, name
+            FROM production_units
+            ORDER BY name
+        """)
+        unidades = cursor.fetchall()
+
+        # Ingresos
+        cursor.execute("""
+            SELECT
+                i.id,
+                i.unit_id,
+                i.lot_id,
+                i.concept,
+                i.amount,
+                i.income_date,
+                i.description
+            FROM incomes i
+            ORDER BY i.income_date DESC, i.id DESC
+        """)
+        ingresos = cursor.fetchall()
+
+        # Gastos
+        cursor.execute("""
+            SELECT 
+                e.id,
+                e.unit_id,
+                e.lot_id,
+                e.concept,
+                e.category,
+                e.amount,
+                e.expense_date,
+                e.description
+            FROM expenses e
+            ORDER BY e.expense_date DESC, e.id DESC
+        """)
+        gastos = cursor.fetchall()
+
+        # Totales
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM incomes
+        """)
+        total_ingresos = cursor.fetchone()["total"]
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM expenses
+        """)
+        total_gastos = cursor.fetchone()["total"]
+
+        saldo = total_ingresos - total_gastos
+
+        return render_template(
+            "finanzas.html",
+            ingresos=ingresos,
+            gastos=gastos,
+            total_ingresos=total_ingresos,
+            total_gastos=total_gastos,
+            saldo=saldo
+        )
+
+    except Exception as e:
+        print("ERROR EN FINANZAS:", e)
+        flash("No fue posible cargar el módulo de finanzas.", "error")
+        return redirect(url_for("dashboard"))
+
+    finally:
+        if cursor:
+            cursor.close()
+
+
+@app.route("/finanzas/ingreso", methods=["POST"])
+def registrar_ingreso():
+    conexion = None
+    cursor = None
+
+    try:
+        unit_id = request.form.get("unit_id")
+        lot_id = request.form.get("lot_id") or None
+        concept = request.form.get("concept")
+        amount = request.form.get("amount")
+        income_date = request.form.get("income_date")
+        description = request.form.get("description")
+
+        if not unit_id or not concept or not amount or not income_date:
+            flash("Completa los campos obligatorios del ingreso.", "error")
+            return redirect(url_for("finanzas"))
+
+        conexion = mysql.connection
+        cursor = conexion.cursor()
+
+        cursor.execute("""
+            INSERT INTO incomes
+            (unit_id, lot_id, concept, amount, income_date, description)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            unit_id,
+            lot_id,
+            concept,
+            amount,
+            income_date,
+            description
+        ))
+
+        conexion.commit()
+
+        flash("Ingreso registrado correctamente.", "success")
+
+    except Exception as e:
+        if conexion:
+            conexion.rollback()
+
+        print("ERROR REGISTRANDO INGRESO:", e)
+        flash("No fue posible registrar el ingreso.", "error")
+
+    finally:
+        if cursor:
+            cursor.close()
+
+    return redirect(url_for("finanzas"))
+
+
+@app.route("/finanzas/gasto", methods=["POST"])
+def registrar_gasto():
+    conexion = None
+    cursor = None
+
+    try:
+        unit_id = request.form.get("unit_id")
+        lot_id = request.form.get("lot_id") or None
+        concept = request.form.get("concept")
+        category = request.form.get("category")
+        amount = request.form.get("amount")
+        expense_date = request.form.get("expense_date")
+        description = request.form.get("description")
+
+        if not unit_id or not concept or not category or not amount or not expense_date:
+            flash("Completa los campos obligatorios del gasto.", "error")
+            return redirect(url_for("finanzas"))
+
+        conexion = mysql.connection
+        cursor = conexion.cursor()
+
+        cursor.execute("""
+            INSERT INTO expenses
+            (unit_id, lot_id, concept, category, amount, expense_date, description)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            unit_id,
+            lot_id,
+            concept,
+            category,
+            amount,
+            expense_date,
+            description
+        ))
+
+        conexion.commit()
+
+        flash("Gasto registrado correctamente.", "success")
+
+    except Exception as e:
+        if conexion:
+            conexion.rollback()
+
+        print("ERROR REGISTRANDO GASTO:", e)
+        flash("No fue posible registrar el gasto.", "error")
+
+    finally:
+        if cursor:
+            cursor.close()
+
+    return redirect(url_for("finanzas"))
+            
+
+# ==========================================
+# REPORTES
+# ==========================================
+
+@app.route("/reportes")
+@login_requerido
+def reportes():
+
+    conexion = None
+    cursor = None
+
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor(dictionary=True)
+
+        # ==================================
+        # RESUMEN GENERAL
+        # ==================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM production_units
+            WHERE user_id = %s
+        """, (session["user_id"],))
+
+        total_unidades = cursor.fetchone()["total"]
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM animal_lots l
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+              AND l.status = 'ACTIVO'
+        """, (session["user_id"],))
+
+        total_lotes = cursor.fetchone()["total"]
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(l.quantity), 0) AS total
+            FROM animal_lots l
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+              AND l.status = 'ACTIVO'
+        """, (session["user_id"],))
+
+        total_animales = cursor.fetchone()["total"]
+
+        # ==================================
+        # FINANZAS
+        # ==================================
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(i.amount), 0) AS total
+            FROM incomes i
+            INNER JOIN production_units u
+                ON i.unit_id = u.id
+            WHERE u.user_id = %s
+        """, (session["user_id"],))
+
+        total_ingresos = cursor.fetchone()["total"]
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(e.amount), 0) AS total
+            FROM expenses e
+            INNER JOIN production_units u
+                ON e.unit_id = u.id
+            WHERE u.user_id = %s
+        """, (session["user_id"],))
+
+        total_gastos = cursor.fetchone()["total"]
+
+        saldo = total_ingresos - total_gastos
+
+        # ==================================
+        # PRODUCCIÓN
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                COALESCE(SUM(p.quantity), 0) AS total
+            FROM production_records p
+            INNER JOIN animal_lots l
+                ON p.lot_id = l.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+        """, (session["user_id"],))
+
+        total_produccion = cursor.fetchone()["total"]
+
+        # ==================================
+        # MORTALIDAD
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                COALESCE(SUM(m.quantity), 0) AS total
+            FROM mortality_records m
+            INNER JOIN animal_lots l
+                ON m.lot_id = l.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            WHERE u.user_id = %s
+        """, (session["user_id"],))
+
+        total_mortalidad = cursor.fetchone()["total"]
+
+        # ==================================
+        # PRODUCCIÓN POR UNIDAD
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                u.name AS unidad,
+                COALESCE(SUM(p.quantity), 0) AS produccion
+            FROM production_units u
+            LEFT JOIN animal_lots l
+                ON l.unit_id = u.id
+            LEFT JOIN production_records p
+                ON p.lot_id = l.id
+            WHERE u.user_id = %s
+            GROUP BY u.id, u.name
+            ORDER BY produccion DESC
+        """, (session["user_id"],))
+
+        produccion_unidades = cursor.fetchall()
+
+        # ==================================
+        # GASTOS POR CATEGORÍA
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                e.category,
+                COALESCE(SUM(e.amount), 0) AS total
+            FROM expenses e
+            INNER JOIN production_units u
+                ON e.unit_id = u.id
+            WHERE u.user_id = %s
+            GROUP BY e.category
+            ORDER BY total DESC
+        """, (session["user_id"],))
+
+        gastos_categoria = cursor.fetchall()
+
+        # ==================================
+        # ÚLTIMOS MOVIMIENTOS FINANCIEROS
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                i.concept,
+                i.amount,
+                i.income_date,
+                u.name AS unidad
+            FROM incomes i
+            INNER JOIN production_units u
+                ON i.unit_id = u.id
+            WHERE u.user_id = %s
+            ORDER BY i.income_date DESC, i.id DESC
+            LIMIT 5
+        """, (session["user_id"],))
+
+        ultimos_ingresos = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT
+                e.concept,
+                e.amount,
+                e.expense_date,
+                e.category,
+                u.name AS unidad
+            FROM expenses e
+            INNER JOIN production_units u
+                ON e.unit_id = u.id
+            WHERE u.user_id = %s
+            ORDER BY e.expense_date DESC, e.id DESC
+            LIMIT 5
+        """, (session["user_id"],))
+
+        ultimos_gastos = cursor.fetchall()
+
+        return render_template(
+            "reportes.html",
+            total_unidades=total_unidades,
+            total_lotes=total_lotes,
+            total_animales=total_animales,
+            total_ingresos=total_ingresos,
+            total_gastos=total_gastos,
+            saldo=saldo,
+            total_produccion=total_produccion,
+            total_mortalidad=total_mortalidad,
+            produccion_unidades=produccion_unidades,
+            gastos_categoria=gastos_categoria,
+            ultimos_ingresos=ultimos_ingresos,
+            ultimos_gastos=ultimos_gastos
+        )
+
+    except mysql.connector.Error as error:
+
+        print("ERROR EN REPORTES:", error)
+
+        flash(
+            "No fue posible cargar el módulo de reportes.",
+            "error"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conexion:
+            conexion.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+

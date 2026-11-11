@@ -24,11 +24,11 @@
             <a href="{{ url_for('dashboard') }}">▦ Panel principal</a>
             <a href="{{ url_for('unidades') }}">⌂ Unidades productivas</a>
             <a href="{{ url_for('lotes') }}">◉ Animales y lotes</a>
-            <a href="#">♧ Alimentación y salud</a>
+            <a href="{{ url_for('alimentacion') }}">♧ Alimentación y salud</a>
             <a href="{{ url_for('inventario') }}">▤ Inventario</a>
-            <a href="#">↗ Producción</a>
-            <a href="#">$ Finanzas</a>
-            <a href="#">▧ Reportes</a>
+            <a href="{{ url_for('produccion') }}">↗ Producción</a>
+            <a href="{{ url_for('finanzas') }}">$ Finanzas</a>
+            <a href="{{ url_for('reportes') }}">▧ Reportes</a>
         </nav>
 
         <div class="sidebar-user">

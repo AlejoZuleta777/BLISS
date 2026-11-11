@@ -760,3 +760,266 @@ td {
         padding: 18px;
     }
 }
+
+
+/* ==========================================
+   FINANZAS
+========================================== */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.page-header p {
+    margin-top: 8px;
+    color: #777;
+}
+
+
+/* RESUMEN */
+
+.finance-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.finance-card {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.finance-card span {
+    display: block;
+    color: #777;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.finance-card h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+
+/* SECCIONES */
+
+.finance-section {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    margin: 0;
+}
+
+.section-header p {
+    margin: 7px 0 0;
+    color: #777;
+}
+
+
+/* BOTONES */
+
+.section-header button,
+.finance-section button[type="submit"] {
+    border: none;
+    border-radius: 8px;
+    padding: 11px 18px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.section-header button {
+    background: #111;
+    color: white;
+}
+
+.section-header button:hover {
+    opacity: 0.85;
+}
+
+
+/* FORMULARIOS */
+
+.finance-section form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    background: #f8f8f8;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.finance-section form > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.finance-section label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.finance-section input,
+.finance-section select,
+.finance-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    padding: 11px;
+    font-family: inherit;
+    background: white;
+}
+
+.finance-section textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.finance-section form > div:nth-last-child(1) {
+    grid-column: 1 / -1;
+}
+
+.finance-section form button {
+    width: fit-content;
+}
+
+
+/* TABLAS */
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+.finance-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.finance-section th {
+    text-align: left;
+    font-size: 13px;
+    color: #666;
+    background: #f7f7f7;
+    padding: 13px;
+}
+
+.finance-section td {
+    padding: 14px 13px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.finance-section tbody tr:hover {
+    background: #fafafa;
+}
+
+
+/* SIN DATOS */
+
+.empty-state {
+    text-align: center;
+    padding: 45px 20px;
+    color: #777;
+}
+
+.empty-state h3 {
+    color: #333;
+    margin-bottom: 8px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 800px) {
+
+    .finance-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .finance-section form {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* ==========================================
+   REPORTES
+========================================== */
+
+.report-finance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.report-highlight {
+    background: #f8f8f8;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.report-highlight span {
+    display: block;
+    color: #777;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.report-highlight strong {
+    font-size: 24px;
+}
+
+
+.report-two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+
+@media (max-width: 900px) {
+
+    .report-finance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-two-columns {
+        grid-template-columns: 1fr;
+    }
+
+}

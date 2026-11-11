@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Finanzas</h1>
+        <p>Control financiero de tus unidades productivas.</p>
+    </div>
+</div>
+
+
+<!-- RESUMEN FINANCIERO -->
+
+<div class="finance-cards">
+
+    <div class="finance-card">
+        <span>Total ingresos</span>
+        <h2>$ {{ "{:,.0f}".format(total_ingresos) }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Total gastos</span>
+        <h2>$ {{ "{:,.0f}".format(total_gastos) }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Balance</span>
+        <h2>$ {{ "{:,.0f}".format(saldo) }}</h2>
+    </div>
+
+</div>
+
+
+<!-- INGRESOS -->
+
+<div class="finance-section">
+
+    <div class="section-header">
+        <div>
+            <h2>Ingresos</h2>
+            <p>Dinero generado por la actividad productiva.</p>
+        </div>
+
+        <button type="button"
+                onclick="document.getElementById('formIngreso').style.display='block'">
+            + Registrar ingreso
+        </button>
+    </div>
+
+
+    <!-- FORMULARIO INGRESO -->
+
+    <div id="formIngreso" style="display:none; margin-bottom:25px;">
+
+        <form action="{{ url_for('registrar_ingreso') }}" method="POST">
+
+            <div>
+                <label>Unidad productiva *</label>
+
+                <input
+                    type="number"
+                    name="unit_id"
+                    placeholder="ID de la unidad"
+                    required>
+            </div>
+
+            <div>
+                <label>Lote</label>
+
+                <input
+                    type="number"
+                    name="lot_id"
+                    placeholder="ID del lote (opcional)">
+            </div>
+
+            <div>
+                <label>Concepto *</label>
+
+                <input
+                    type="text"
+                    name="concept"
+                    placeholder="Ej: Venta de leche"
+                    required>
+            </div>
+
+            <div>
+                <label>Valor *</label>
+
+                <input
+                    type="number"
+                    name="amount"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej: 500000"
+                    required>
+            </div>
+
+            <div>
+                <label>Fecha *</label>
+
+                <input
+                    type="date"
+                    name="income_date"
+                    required>
+            </div>
+
+            <div>
+                <label>Descripción</label>
+
+                <textarea
+                    name="description"
+                    placeholder="Descripción del ingreso"></textarea>
+            </div>
+
+            <button type="submit">
+                Guardar ingreso
+            </button>
+
+            <button
+                type="button"
+                onclick="document.getElementById('formIngreso').style.display='none'">
+                Cancelar
+            </button>
+
+        </form>
+
+    </div>
+
+
+    {% if ingresos %}
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Concepto</th>
+                    <th>Valor</th>
+                    <th>Fecha</th>
+                    <th>Unidad</th>
+                    <th>Descripción</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for ingreso in ingresos %}
+
+                <tr>
+
+                    <td>{{ ingreso.concept }}</td>
+
+                    <td>
+                        $ {{ "{:,.0f}".format(ingreso.amount) }}
+                    </td>
+
+                    <td>
+                        {{ ingreso.income_date }}
+                    </td>
+
+                    <td>
+                        {{ ingreso.unit_id }}
+                    </td>
+
+                    <td>
+                        {{ ingreso.description or "-" }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No hay ingresos registrados</h3>
+
+        <p>
+            Cuando registres ingresos aparecerán aquí.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- GASTOS -->
+
+<div class="finance-section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>Gastos</h2>
+
+            <p>
+                Control de los gastos de la actividad productiva.
+            </p>
+
+        </div>
+
+        <button type="button"
+                onclick="document.getElementById('formGasto').style.display='block'">
+
+            + Registrar gasto
+
+        </button>
+
+    </div>
+
+
+    <!-- FORMULARIO GASTO -->
+
+    <div id="formGasto" style="display:none; margin-bottom:25px;">
+
+        <form action="{{ url_for('registrar_gasto') }}" method="POST">
+
+            <div>
+
+                <label>Unidad productiva *</label>
+
+                <input
+                    type="number"
+                    name="unit_id"
+                    placeholder="ID de la unidad"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>Lote</label>
+
+                <input
+                    type="number"
+                    name="lot_id"
+                    placeholder="ID del lote (opcional)">
+
+            </div>
+
+
+            <div>
+
+                <label>Concepto *</label>
+
+                <input
+                    type="text"
+                    name="concept"
+                    placeholder="Ej: Compra de alimento"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>Categoría *</label>
+
+                <select name="category" required>
+
+                    <option value="">
+                        Selecciona una categoría
+                    </option>
+
+                    <option value="Alimentación">
+                        Alimentación
+                    </option>
+
+                    <option value="Salud animal">
+                        Salud animal
+                    </option>
+
+                    <option value="Personal">
+                        Personal
+                    </option>
+
+                    <option value="Transporte">
+                        Transporte
+                    </option>
+
+                    <option value="Mantenimiento">
+                        Mantenimiento
+                    </option>
+
+                    <option value="Servicios">
+                        Servicios
+                    </option>
+
+                    <option value="Otros">
+                        Otros
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>Valor *</label>
+
+                <input
+                    type="number"
+                    name="amount"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej: 250000"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>Fecha *</label>
+
+                <input
+                    type="date"
+                    name="expense_date"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>Descripción</label>
+
+                <textarea
+                    name="description"
+                    placeholder="Descripción del gasto"></textarea>
+
+            </div>
+
+
+            <button type="submit">
+                Guardar gasto
+            </button>
+
+
+            <button
+                type="button"
+                onclick="document.getElementById('formGasto').style.display='none'">
+
+                Cancelar
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    {% if gastos %}
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Concepto</th>
+                    <th>Categoría</th>
+                    <th>Valor</th>
+                    <th>Fecha</th>
+                    <th>Unidad</th>
+                    <th>Descripción</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for gasto in gastos %}
+
+                <tr>
+
+                    <td>
+                        {{ gasto.concept }}
+                    </td>
+
+                    <td>
+                        {{ gasto.category }}
+                    </td>
+
+                    <td>
+                        $ {{ "{:,.0f}".format(gasto.amount) }}
+                    </td>
+
+                    <td>
+                        {{ gasto.expense_date }}
+                    </td>
+
+                    <td>
+                        {{ gasto.unit_id }}
+                    </td>
+
+                    <td>
+                        {{ gasto.description or "-" }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No hay gastos registrados</h3>
+
+        <p>
+            Cuando registres gastos aparecerán aquí.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Alimentación | BLISS{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <span class="section-label">GESTIÓN PECUARIA</span>
+        <h1>Alimentación</h1>
+        <p>Control de consumo y costos de alimentación de tus lotes.</p>
+    </div>
+</div>
+
+
+<!-- ==========================================
+     REGISTRAR ALIMENTACIÓN
+========================================== -->
+
+<section class="card">
+
+    <div class="card-header">
+        <div>
+            <span class="section-label">NUEVO REGISTRO</span>
+            <h2>Registrar alimentación</h2>
+        </div>
+    </div>
+
+
+    {% if lotes %}
+
+    <form method="POST" action="{{ url_for('alimentacion') }}">
+
+        <div class="form-grid">
+
+            <!-- LOTE -->
+            <div class="form-group">
+
+                <label for="lote_id">
+                    Lote
+                </label>
+
+                <select
+                    name="lote_id"
+                    id="lote_id"
+                    required
+                >
+
+                    <option value="">
+                        Selecciona un lote
+                    </option>
+
+                    {% for lote in lotes %}
+
+                    <option value="{{ lote.id }}">
+                        {{ lote.name }} — {{ lote.especie }} — {{ lote.unidad }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- ALIMENTO -->
+            <div class="form-group">
+
+                <label for="alimento">
+                    Alimento
+                </label>
+
+                <input
+                    type="text"
+                    name="alimento"
+                    id="alimento"
+                    maxlength="120"
+                    placeholder="Ej. Concentrado Bovino"
+                    required
+                >
+
+            </div>
+
+
+            <!-- CANTIDAD -->
+            <div class="form-group">
+
+                <label for="cantidad">
+                    Cantidad
+                </label>
+
+                <input
+                    type="number"
+                    name="cantidad"
+                    id="cantidad"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="Ej. 20"
+                    required
+                >
+
+            </div>
+
+
+            <!-- UNIDAD -->
+            <div class="form-group">
+
+                <label for="unidad_medida">
+                    Unidad de medida
+                </label>
+
+                <select
+                    name="unidad_medida"
+                    id="unidad_medida"
+                    required
+                >
+
+                    <option value="kg">
+                        Kilogramos (kg)
+                    </option>
+
+                    <option value="litros">
+                        Litros
+                    </option>
+
+                    <option value="unidades">
+                        Unidades
+                    </option>
+
+                    <option value="bultos">
+                        Bultos
+                    </option>
+
+                    <option value="sacos">
+                        Sacos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- PRECIO -->
+            <div class="form-group">
+
+                <label for="precio_unitario">
+                    Precio por unidad
+                </label>
+
+                <input
+                    type="number"
+                    name="precio_unitario"
+                    id="precio_unitario"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej. 4500"
+                    required
+                >
+
+            </div>
+
+
+            <!-- FECHA -->
+            <div class="form-group">
+
+                <label for="fecha_alimentacion">
+                    Fecha
+                </label>
+
+                <input
+                    type="date"
+                    name="fecha_alimentacion"
+                    id="fecha_alimentacion"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- OBSERVACIONES -->
+
+        <div class="form-group full-width">
+
+            <label for="observaciones">
+                Observaciones
+            </label>
+
+            <textarea
+                name="observaciones"
+                id="observaciones"
+                rows="3"
+                placeholder="Ej. Alimentación de la mañana..."
+            ></textarea>
+
+        </div>
+
+
+        <!-- ==================================
+             TOTAL
+        ================================== -->
+
+        <div class="feeding-total">
+
+            <div>
+
+                <span>
+                    Costo estimado
+                </span>
+
+                <strong id="total-preview">
+                    $0
+                </strong>
+
+            </div>
+
+            <small>
+                Cantidad × precio por unidad
+            </small>
+
+        </div>
+
+
+        <!-- BOTÓN -->
+
+        <button
+            type="submit"
+            class="btn-primary"
+        >
+            Registrar alimentación
+        </button>
+
+    </form>
+
+
+    {% else %}
+
+    <!-- SIN LOTES -->
+
+    <div class="empty-state">
+
+        <h3>
+            No tienes lotes activos
+        </h3>
+
+        <p>
+            Primero debes registrar un lote para poder
+            registrar su alimentación.
+        </p>
+
+        <a
+            href="{{ url_for('lotes') }}"
+            class="btn-primary"
+        >
+            Ir a Animales y lotes
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+
+<!-- ==========================================
+     HISTORIAL
+========================================== -->
+
+<section class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <span class="section-label">
+                HISTORIAL
+            </span>
+
+            <h2>
+                Registros de alimentación
+            </h2>
+
+        </div>
+
+        <span class="record-count">
+            {{ registros|length }} registros
+        </span>
+
+    </div>
+
+
+    {% if registros %}
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Fecha
+                    </th>
+
+                    <th>
+                        Unidad
+                    </th>
+
+                    <th>
+                        Lote
+                    </th>
+
+                    <th>
+                        Alimento
+                    </th>
+
+                    <th>
+                        Cantidad
+                    </th>
+
+                    <th>
+                        Precio unitario
+                    </th>
+
+                    <th>
+                        Costo total
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for registro in registros %}
+
+                <tr>
+
+                    <td>
+                        {{ registro.feeding_date.strftime('%d/%m/%Y') }}
+                    </td>
+
+
+                    <td>
+                        {{ registro.unidad }}
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ registro.lote }}
+                        </strong>
+
+                        <small>
+                            {{ registro.especie }}
+                        </small>
+
+                    </td>
+
+
+                    <td>
+                        {{ registro.feed_name }}
+                    </td>
+
+
+                    <td>
+
+                        {{ registro.quantity }}
+
+                        {{ registro.measurement_unit }}
+
+                    </td>
+
+
+                    <td>
+                        ${{ "{:,.0f}".format(registro.unit_price) }}
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            ${{ "{:,.0f}".format(registro.total_cost) }}
+                        </strong>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>
+            Aún no hay registros
+        </h3>
+
+        <p>
+            Los registros de alimentación aparecerán aquí
+            después de guardar el primero.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

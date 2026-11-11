@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-heading">
+
+    <div>
+        <span class="eyebrow">GESTIÓN PRODUCTIVA</span>
+
+        <h1>Producción</h1>
+
+        <p>
+            Registra y consulta la producción de tus lotes.
+        </p>
+    </div>
+
+</div>
+
+
+<!-- MENSAJES -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="flash {{ category }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+
+
+<!-- FORMULARIO -->
+
+<div class="panel form-panel">
+
+    <div class="panel-heading">
+
+        <div>
+
+            <span class="eyebrow">
+                NUEVO REGISTRO
+            </span>
+
+            <h2>
+                Registrar producción
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST">
+
+        <div class="form-grid">
+
+
+            <!-- LOTE -->
+
+            <div class="form-group">
+
+                <label>
+                    Lote *
+                </label>
+
+                <select
+                    name="lot_id"
+                    required
+                >
+
+                    <option value="">
+                        Seleccionar lote
+                    </option>
+
+                    {% for lote in lotes %}
+
+                        <option value="{{ lote.id }}">
+
+                            {{ lote.name }} - {{ lote.species }}
+
+                            ({{ lote.quantity }} animales)
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+
+            <!-- CANTIDAD -->
+
+            <div class="form-group">
+
+                <label>
+                    Cantidad *
+                </label>
+
+                <input
+                    type="number"
+                    name="quantity"
+                    step="0.01"
+                    min="0"
+                    placeholder="Ej: 150"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- UNIDAD -->
+
+            <div class="form-group">
+
+                <label>
+                    Unidad de medida
+                </label>
+
+                <select
+                    name="measurement_unit"
+                >
+
+                    <option value="unidad">
+                        Unidad
+                    </option>
+
+                    <option value="litros">
+                        Litros
+                    </option>
+
+                    <option value="kg">
+                        Kilogramos
+                    </option>
+
+                    <option value="gramos">
+                        Gramos
+                    </option>
+
+                    <option value="toneladas">
+                        Toneladas
+                    </option>
+
+                    <option value="docenas">
+                        Docenas
+                    </option>
+
+                    <option value="bultos">
+                        Bultos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- FECHA -->
+
+            <div class="form-group">
+
+                <label>
+                    Fecha de producción *
+                </label>
+
+                <input
+                    type="date"
+                    name="production_date"
+                    value="{{ request.form.get('production_date', '') }}"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- OBSERVACIONES -->
+
+            <div class="form-group form-full">
+
+                <label>
+                    Observaciones
+                </label>
+
+                <input
+                    type="text"
+                    name="notes"
+                    placeholder="Ej: Producción de la mañana"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn-primary"
+        >
+
+            Registrar producción
+
+        </button>
+
+    </form>
+
+</div>
+
+
+
+<!-- HISTORIAL -->
+
+<div class="panel">
+
+    <div class="panel-heading">
+
+        <div>
+
+            <span class="eyebrow">
+                HISTORIAL
+            </span>
+
+            <h2>
+                Historial de producción
+            </h2>
+
+        </div>
+
+        {% if producciones %}
+
+            <span class="record-count">
+
+                {{ producciones|length }} registros
+
+            </span>
+
+        {% endif %}
+
+    </div>
+
+
+    {% if producciones %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Fecha
+                        </th>
+
+                        <th>
+                            Lote
+                        </th>
+
+                        <th>
+                            Especie
+                        </th>
+
+                        <th>
+                            Cantidad
+                        </th>
+
+                        <th>
+                            Unidad
+                        </th>
+
+                        <th>
+                            Observaciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for p in producciones %}
+
+                        <tr>
+
+                            <td>
+                                {{ p.production_date }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ p.lot_name }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ p.species }}
+                            </td>
+
+                            <td>
+                                {{ p.quantity }}
+                            </td>
+
+                            <td>
+                                {{ p.measurement_unit }}
+                            </td>
+
+                            <td>
+                                {{ p.notes or "-" }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <span>↗</span>
+
+            <h3>
+                Todavía no hay registros de producción
+            </h3>
+
+            <p>
+                Cuando registres producción aparecerá aquí.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}BLISS | Reportes{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Reportes</h1>
+        <p>Resumen inteligente de tus unidades productivas.</p>
+    </div>
+</div>
+
+
+<!-- ==========================================
+     INDICADORES PRINCIPALES
+========================================== -->
+
+<div class="finance-cards">
+
+    <div class="finance-card">
+        <span>Unidades productivas</span>
+        <h2>{{ total_unidades }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Lotes activos</span>
+        <h2>{{ total_lotes }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Animales registrados</span>
+        <h2>{{ total_animales }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Producción acumulada</span>
+        <h2>{{ "{:,.2f}".format(total_produccion) }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Mortalidad registrada</span>
+        <h2>{{ total_mortalidad }}</h2>
+    </div>
+
+    <div class="finance-card">
+        <span>Balance financiero</span>
+        <h2>$ {{ "{:,.0f}".format(saldo) }}</h2>
+    </div>
+
+</div>
+
+
+<!-- ==========================================
+     FINANZAS
+========================================== -->
+
+<div class="finance-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Resumen financiero</h2>
+
+            <p>
+                Estado económico de tus unidades productivas.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="report-finance-grid">
+
+        <div class="report-highlight">
+            <span>Total ingresos</span>
+
+            <strong>
+                $ {{ "{:,.0f}".format(total_ingresos) }}
+            </strong>
+        </div>
+
+
+        <div class="report-highlight">
+            <span>Total gastos</span>
+
+            <strong>
+                $ {{ "{:,.0f}".format(total_gastos) }}
+            </strong>
+        </div>
+
+
+        <div class="report-highlight">
+            <span>Balance</span>
+
+            <strong>
+                $ {{ "{:,.0f}".format(saldo) }}
+            </strong>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==========================================
+     PRODUCCIÓN POR UNIDAD
+========================================== -->
+
+<div class="finance-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Producción por unidad</h2>
+
+            <p>
+                Producción acumulada de cada unidad productiva.
+            </p>
+        </div>
+
+    </div>
+
+
+    {% if produccion_unidades %}
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Unidad productiva</th>
+                    <th>Producción acumulada</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for item in produccion_unidades %}
+
+                <tr>
+
+                    <td>
+                        <strong>{{ item.unidad }}</strong>
+                    </td>
+
+                    <td>
+                        {{ "{:,.2f}".format(item.produccion) }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No hay producción registrada</h3>
+
+        <p>
+            Cuando registres producción aparecerá aquí.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- ==========================================
+     GASTOS POR CATEGORÍA
+========================================== -->
+
+<div class="finance-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Gastos por categoría</h2>
+
+            <p>
+                Distribución de los gastos registrados.
+            </p>
+        </div>
+
+    </div>
+
+
+    {% if gastos_categoria %}
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Categoría</th>
+                    <th>Total gastado</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for gasto in gastos_categoria %}
+
+                <tr>
+
+                    <td>
+                        {{ gasto.category }}
+                    </td>
+
+                    <td>
+                        $ {{ "{:,.0f}".format(gasto.total) }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No hay gastos registrados</h3>
+
+        <p>
+            Los gastos aparecerán aquí agrupados por categoría.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- ==========================================
+     ÚLTIMOS MOVIMIENTOS
+========================================== -->
+
+<div class="report-two-columns">
+
+
+    <!-- INGRESOS -->
+
+    <div class="finance-section">
+
+        <div class="section-header">
+
+            <div>
+                <h2>Últimos ingresos</h2>
+            </div>
+
+        </div>
+
+
+        {% if ultimos_ingresos %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Valor</th>
+                        <th>Unidad</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for ingreso in ultimos_ingresos %}
+
+                    <tr>
+
+                        <td>
+                            {{ ingreso.concept }}
+                        </td>
+
+                        <td>
+                            $ {{ "{:,.0f}".format(ingreso.amount) }}
+                        </td>
+
+                        <td>
+                            {{ ingreso.unidad }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <p>No hay ingresos registrados.</p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- GASTOS -->
+
+    <div class="finance-section">
+
+        <div class="section-header">
+
+            <div>
+                <h2>Últimos gastos</h2>
+            </div>
+
+        </div>
+
+
+        {% if ultimos_gastos %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Valor</th>
+                        <th>Categoría</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for gasto in ultimos_gastos %}
+
+                    <tr>
+
+                        <td>
+                            {{ gasto.concept }}
+                        </td>
+
+                        <td>
+                            $ {{ "{:,.0f}".format(gasto.amount) }}
+                        </td>
+
+                        <td>
+                            {{ gasto.category }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <p>No hay gastos registrados.</p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% endblock %}
