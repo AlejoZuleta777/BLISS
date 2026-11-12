@@ -1,35 +1,120 @@
-# BLISS
-### Sistema de Gestión Inteligente de Producción Animal
+# 🌱 BLISS
 
-**BLISS** es un proyecto de desarrollo de software orientado a la gestión y administración de unidades productivas agropecuarias. Busca facilitar el registro, organización y seguimiento de información relacionada con la producción animal mediante una aplicación web intuitiva y sencilla de utilizar.
+### Sistema de gestión inteligente para unidades productivas agropecuarias
 
-## 🎯 Objetivo general
+BLISS es una aplicación web desarrollada para facilitar la gestión y organización de la información relacionada con unidades productivas agropecuarias.
 
-Desarrollar una plataforma web que permita centralizar y administrar la información de las unidades productivas, facilitando el control de sus procesos y la gestión de los recursos agropecuarios.
+El sistema centraliza diferentes procesos como el manejo de unidades productivas, animales y lotes, alimentación, salud animal, inventario, producción, finanzas, reportes y eventos programados.
 
-## 💡 Problemática
+---
 
-La administración de información en las unidades productivas puede resultar compleja cuando los registros se realizan de manera manual o mediante herramientas dispersas.
+## 🎯 Objetivo
 
-BLISS busca ofrecer una alternativa digital que facilite la organización de esta información.
+Desarrollar una solución web que permita a los productores agropecuarios gestionar de manera organizada la información de sus unidades productivas, reduciendo la dependencia de registros dispersos y facilitando la consulta y seguimiento de los datos.
+
+---
+
+## 💡 Problema identificado
+
+En muchas unidades productivas la información puede encontrarse distribuida entre documentos físicos, hojas de cálculo o diferentes registros.
+
+Esto puede dificultar:
+
+- El seguimiento de los animales.
+- El control de inventarios.
+- El registro de alimentación.
+- El seguimiento de eventos de salud.
+- El control de ingresos y gastos.
+- El análisis de la producción.
+- La planificación de actividades futuras.
+
+BLISS busca centralizar esta información en una sola aplicación.
+
+---
+
+## 🚀 Funcionalidades principales
+
+### 🏡 Unidades productivas
+
+Permite registrar y administrar las unidades productivas que hacen parte del sistema.
+
+- Crear unidades.
+- Consultar unidades.
+- Editar información.
+
+### 🐄 Animales y lotes
+
+Permite organizar los animales mediante lotes y especies.
+
+- Registro de lotes.
+- Registro de especies.
+- Cantidad de animales.
+- Consulta de información.
+
+### 🌾 Alimentación
+
+Permite registrar información relacionada con la alimentación de los animales y realizar seguimiento de los registros.
+
+### 🩺 Salud animal
+
+Permite llevar control de eventos relacionados con la salud.
+
+- Eventos sanitarios.
+- Tratamientos.
+- Seguimiento.
+- Registro de mortalidades.
+
+### 📦 Inventario
+
+Permite controlar los productos e insumos utilizados en las unidades productivas.
+
+- Registro de artículos.
+- Entradas.
+- Salidas.
+- Movimientos de inventario.
+
+### 📈 Producción
+
+Permite registrar y consultar información relacionada con la producción obtenida.
+
+### 💰 Finanzas
+
+Permite llevar un control básico de los movimientos financieros.
+
+- Ingresos.
+- Gastos.
+- Descripciones.
+- Fechas.
+- Valores.
+
+### 📊 Reportes
+
+Permite consultar información consolidada de los diferentes procesos registrados en BLISS.
+
+### 📅 Eventos y alertas
+
+Permite programar actividades y consultar eventos próximos para facilitar el seguimiento de las tareas.
+
+### 📋 Dashboard
+
+El panel principal permite visualizar información general y acceder rápidamente a los diferentes módulos.
+
+---
 
 ## 🛠️ Tecnologías utilizadas
 
-- **Python:** lenguaje de programación principal.
-- **Flask:** framework para el desarrollo web.
-- **HTML5:** estructura de las interfaces.
-- **CSS3:** diseño y estilos visuales.
-- **JavaScript:** funcionalidades del lado del cliente.
-- **MySQL:** sistema de gestión de bases de datos utilizado durante el desarrollo.
+| Tecnología | Uso |
+|---|---|
+| Python | Lenguaje principal |
+| Flask | Framework web |
+| MySQL | Base de datos |
+| HTML5 | Estructura de las páginas |
+| CSS3 | Diseño e interfaz |
+| JavaScript | Interactividad |
+| Git | Control de versiones |
+| GitHub | Repositorio y gestión del código |
 
-## 📦 Módulos desarrollados
-
-- Inicio de sesión y registro de usuarios.
-- Panel principal (Dashboard).
-- Gestión de unidades productivas.
-- Registro y consulta de lotes.
-- Edición de lotes.
-- Módulo de inventario.
+---
 
 ## 🗂️ Estructura del proyecto
 
@@ -37,10 +122,8 @@ BLISS busca ofrecer una alternativa digital que facilite la organización de est
 BLISS/
 │
 ├── app.py
-├── requirements.txt
-├── .gitignore
 │
-├── Templates/
+├── templates/
 │   ├── base.html
 │   ├── dashboard.html
 │   ├── inicio.html
@@ -49,36 +132,152 @@ BLISS/
 │   ├── unidades.html
 │   ├── lotes.html
 │   ├── editar_lote.html
-│   └── inventario.html
+│   ├── inventario.html
+│   └── ...
 │
-└── static/
-    ├── css/
-    │   └── estilos.css
-    └── js/
-        └── app.js
+├── static/
+│   ├── css/
+│   └── js/
+│
+├── docs/
+│   └── historias_usuario.md
+│
+└── README.md
 ```
-
-## 🚧 Estado del proyecto
-
-**En desarrollo.**
-
-El proyecto cuenta con una estructura inicial de aplicación web, diferentes módulos de gestión y una base de código que continuará evolucionando mediante nuevas funcionalidades, mejoras de interfaz y optimización de procesos.
-
-## 🔮 Mejoras proyectadas
-
-- Fortalecimiento de los módulos de producción animal.
-- Optimización de la gestión de animales y lotes.
-- Implementación de reportes de producción.
-- Mejoras en la administración de inventarios.
-- Fortalecimiento de la gestión de datos.
-- Mejoras de experiencia de usuario.
-
-## 👨‍💻 Autor
-
-**MAICOL ZULETA**
-
-Proyecto académico de Ingeniería de Software.
 
 ---
 
-*BLISS – Tecnología para una gestión agropecuaria más organizada.*
+## 👤 Historias de Usuario
+
+BLISS fue desarrollado tomando como referencia un conjunto de Historias de Usuario orientadas a las necesidades de un productor agropecuario.
+
+Las historias se encuentran documentadas en:
+
+**`docs/historias_usuario.md`**
+
+Entre las principales se encuentran:
+
+- Registro e inicio de sesión.
+- Gestión de unidades productivas.
+- Gestión de animales y lotes.
+- Control de alimentación.
+- Gestión de salud animal.
+- Gestión de inventario.
+- Registro de producción.
+- Control de ingresos y gastos.
+- Generación de reportes.
+- Programación de eventos.
+- Consulta de alertas.
+- Dashboard y navegación.
+
+---
+
+## 🗄️ Base de datos
+
+BLISS utiliza MySQL para almacenar la información generada por la aplicación.
+
+Entre las principales entidades utilizadas se encuentran:
+
+- `users`
+- `production_units`
+- `species`
+- `animal_lots`
+- `inventory_items`
+- `inventory_movements`
+- `feeding_records`
+- `health_events`
+- `mortality_records`
+- `production_records`
+- `incomes`
+- `expenses`
+- `scheduled_events`
+- `alerts`
+
+La estructura permite relacionar la información de las diferentes áreas de gestión agropecuaria.
+
+---
+
+## ▶️ Ejecución del proyecto
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/AlejoZuleta777/BLISS.git
+```
+
+### 2. Ingresar al proyecto
+
+```bash
+cd BLISS
+```
+
+### 3. Crear y activar el entorno virtual
+
+En Windows:
+
+```bash
+python -m venv .venv
+```
+
+Activar:
+
+```bash
+.venv\Scripts\activate
+```
+
+### 4. Instalar dependencias
+
+Si el proyecto cuenta con un archivo `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Configurar MySQL
+
+Crear la base de datos correspondiente y configurar las credenciales utilizadas por la aplicación.
+
+### 6. Ejecutar Flask
+
+```bash
+python app.py
+```
+
+Después de iniciar el servidor, acceder desde el navegador a la dirección local indicada por Flask.
+
+---
+
+## 🔄 Control de versiones
+
+El proyecto utiliza Git para realizar el control de versiones.
+
+Los cambios principales son registrados mediante commits y posteriormente enviados al repositorio remoto de GitHub.
+
+Repositorio:
+
+**AlejoZuleta777/BLISS**
+
+---
+
+## 📌 Estado del proyecto
+
+**Estado:** Implementación final / versión académica.
+
+BLISS cuenta con los principales módulos definidos durante el desarrollo y con documentación de las Historias de Usuario.
+
+---
+
+## 👨‍💻 Autor
+
+**Maicol Alejandro Sanchez Zuleta**
+
+Proyecto académico — Ingeniería de Software.
+
+---
+
+## 📚 Documentación
+
+- [Historias de Usuario](docs/historias_usuario.md)
+- Código fuente del proyecto
+- Estructura de base de datos
+- Control de versiones mediante Git y GitHub
