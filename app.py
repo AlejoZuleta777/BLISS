@@ -1403,7 +1403,7 @@ def registrar_ingreso():
             flash("Completa los campos obligatorios del ingreso.", "error")
             return redirect(url_for("finanzas"))
 
-        conexion = mysql.connection
+        conexion = conectar_bd()
         cursor = conexion.cursor()
 
         cursor.execute("""
@@ -1455,7 +1455,7 @@ def registrar_gasto():
             flash("Completa los campos obligatorios del gasto.", "error")
             return redirect(url_for("finanzas"))
 
-        conexion = mysql.connection
+        conexion = conectar_bd()
         cursor = conexion.cursor()
 
         cursor.execute("""
