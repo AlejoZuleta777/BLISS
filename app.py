@@ -1301,6 +1301,162 @@ def produccion():
     )
 
 # ==================================
+# Mortalidad
+# ==================================
+
+@app.route("/mortalidad", methods=["GET", "POST"])
+@login_requerido
+def mortalidad():
+
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+
+    user_id = session["user_id"]
+
+    if request.method == "POST":
+
+        lot_id = request.form.get("lot_id")
+        quantity = request.form.get("quantity")
+        mortality_date = request.form.get("mortality_date")
+        reason = request.form.get("reason")
+        notes = request.form.get("notes")
+
+        if not lot_id or not quantity or not mortality_date:
+            flash("Completa los campos obligatorios.", "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for("mortalidad"))
+
+        try:
+
+            # Verificar que el lote pertenezca al usuario
+            cursor.execute("""
+                SELECT
+                    l.id,
+                    l.name,
+                    l.quantity,
+                    s.name AS species
+                FROM animal_lots l
+                INNER JOIN production_units u
+                    ON l.unit_id = u.id
+                INNER JOIN species s
+                    ON l.species_id = s.id
+                WHERE l.id = %s
+                  AND u.user_id = %s
+            """, (lot_id, user_id))
+
+            lote = cursor.fetchone()
+
+            if not lote:
+
+                flash(
+                    "El lote seleccionado no es válido.",
+                    "danger"
+                )
+
+            elif int(quantity) > int(lote["quantity"]):
+
+                flash(
+                    "La mortalidad no puede superar la cantidad de animales del lote.",
+                    "danger"
+                )
+
+            else:
+
+                cursor.execute("""
+                    INSERT INTO mortality_records
+                    (
+                        lot_id,
+                        quantity,
+                        mortality_date,
+                        reason,
+                        notes
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    lot_id,
+                    quantity,
+                    mortality_date,
+                    reason,
+                    notes
+                ))
+
+                conn.commit()
+
+                flash(
+                    "Mortalidad registrada correctamente.",
+                    "success"
+                )
+
+        except Exception as e:
+
+            conn.rollback()
+
+            flash(
+                f"Error al registrar la mortalidad: {str(e)}",
+                "danger"
+            )
+
+        finally:
+
+            cursor.close()
+            conn.close()
+
+        return redirect(url_for("mortalidad"))
+
+    # Lotes del usuario
+    cursor.execute("""
+        SELECT
+            l.id,
+            l.name,
+            l.quantity,
+            s.name AS species,
+            u.name AS unit_name
+        FROM animal_lots l
+        INNER JOIN production_units u
+            ON l.unit_id = u.id
+        INNER JOIN species s
+            ON l.species_id = s.id
+        WHERE u.user_id = %s
+        ORDER BY l.name
+    """, (user_id,))
+
+    lotes = cursor.fetchall()
+
+    # Historial de mortalidad
+    cursor.execute("""
+        SELECT
+            m.id,
+            m.quantity,
+            m.mortality_date,
+            m.reason,
+            m.notes,
+            l.name AS lot_name,
+            s.name AS species
+        FROM mortality_records m
+        INNER JOIN animal_lots l
+            ON m.lot_id = l.id
+        INNER JOIN species s
+            ON l.species_id = s.id
+        INNER JOIN production_units u
+            ON l.unit_id = u.id
+        WHERE u.user_id = %s
+        ORDER BY m.mortality_date DESC, m.id DESC
+    """, (user_id,))
+
+    mortalidades = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "mortalidad.html",
+        lotes=lotes,
+        mortalidades=mortalidades
+    )
+
+
+# ==================================
         # Finanzas
         # ==================================
 

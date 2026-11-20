@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-heading">
+
+    <div>
+        <span class="eyebrow">GESTIÓN PRODUCTIVA</span>
+
+        <h1>Mortalidad</h1>
+
+        <p>
+            Registra y consulta la mortalidad de tus lotes.
+        </p>
+    </div>
+
+</div>
+
+
+<!-- MENSAJES -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="flash {{ category }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+
+
+<!-- FORMULARIO -->
+
+<div class="panel form-panel">
+
+    <div class="panel-heading">
+
+        <div>
+
+            <span class="eyebrow">
+                NUEVO REGISTRO
+            </span>
+
+            <h2>
+                Registrar mortalidad
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST">
+
+        <div class="form-grid">
+
+
+            <!-- LOTE -->
+
+            <div class="form-group">
+
+                <label>
+                    Lote *
+                </label>
+
+                <select
+                    name="lot_id"
+                    required
+                >
+
+                    <option value="">
+                        Seleccionar lote
+                    </option>
+
+                    {% for lote in lotes %}
+
+                        <option value="{{ lote.id }}">
+
+                            {{ lote.name }} - {{ lote.species }}
+
+                            ({{ lote.quantity }} animales)
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+
+            <!-- CANTIDAD -->
+
+            <div class="form-group">
+
+                <label>
+                    Cantidad de animales muertos *
+                </label>
+
+                <input
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    placeholder="Ej: 5"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- FECHA -->
+
+            <div class="form-group">
+
+                <label>
+                    Fecha de mortalidad *
+                </label>
+
+                <input
+                    type="date"
+                    name="mortality_date"
+                    value="{{ request.form.get('mortality_date', '') }}"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- CAUSA -->
+
+            <div class="form-group">
+
+                <label>
+                    Causa
+                </label>
+
+                <select name="reason">
+
+                    <option value="">
+                        Seleccionar causa
+                    </option>
+
+                    <option value="Enfermedad">
+                        Enfermedad
+                    </option>
+
+                    <option value="Accidente">
+                        Accidente
+                    </option>
+
+                    <option value="Muerte natural">
+                        Muerte natural
+                    </option>
+
+                    <option value="Problemas sanitarios">
+                        Problemas sanitarios
+                    </option>
+
+                    <option value="Desconocida">
+                        Desconocida
+                    </option>
+
+                    <option value="Otra">
+                        Otra
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- OBSERVACIONES -->
+
+            <div class="form-group full-width">
+
+                <label>
+                    Observaciones
+                </label>
+
+                <textarea
+                    name="notes"
+                    rows="4"
+                    placeholder="Observaciones sobre el registro..."
+                >{{ request.form.get('notes', '') }}</textarea>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- BOTÓN -->
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="btn-primary"
+            >
+                Registrar mortalidad
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
