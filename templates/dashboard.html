@@ -34,18 +34,26 @@
     </article>
 
     <article class="stat-card">
-        <div class="stat-icon">◷</div>
-        <span>Eventos pendientes</span>
-        <strong>0</strong>
-        <small>Próximamente conectado</small>
-    </article>
+    <div class="stat-icon">◷</div>
+    <span>Eventos pendientes</span>
+    <strong>{{ total_eventos }}</strong>
+    <small>Eventos programados</small>
+</article>
+
 
     <article class="stat-card">
-        <div class="stat-icon">↗</div>
-        <span>Producción registrada</span>
-        <strong>0</strong>
-        <small>Próximamente conectado</small>
-    </article>
+    <div class="stat-icon">↗</div>
+    <span>Producción registrada</span>
+    <strong>{{ total_produccion }}</strong>
+    <small>Registros de producción</small>
+</article>
+
+<article class="stat-card">
+    <div class="stat-icon">🔔</div>
+    <span>Alertas pendientes</span>
+    <strong>{{ total_alertas }}</strong>
+    <small>Requieren atención</small>
+</article>
 
 </section>
 
@@ -98,6 +106,37 @@
             </div>
 
         </div>
+        
+<a href="{{ url_for('eventos') }}" class="quick-action">
+    <span>05</span>
+    <div>
+        <strong>Eventos</strong>
+        <small>Programa y consulta eventos</small>
+    </div>
+    <span>→</span>
+</a>
+
+
+        <div class="quick-action">
+    <span>05</span>
+    <div>
+        <strong>Eventos</strong>
+        <small>Programa y consulta eventos</small>
+    </div>
+    <span>→</span>
+</div>
+
+<a href="{{ url_for('alertas') }}" class="quick-action">
+    <span>06</span>
+    <div>
+        <strong>🔔 Alertas</strong>
+        <small>{{ total_alertas }} alertas pendientes</small>
+    </div>
+    <span>→</span>
+</a>
+
+</div>
+        
     </article>
 
     <article class="panel welcome-panel">

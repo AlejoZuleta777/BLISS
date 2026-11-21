@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h1>🔔 Alertas</h1>
+        <p class="text-muted">
+            Eventos pendientes que requieren atención.
+        </p>
+    </div>
+
+    {% if alertas %}
+
+        <div class="row">
+
+            {% for alerta in alertas %}
+
+            <div class="col-md-6 mb-3">
+
+                <div class="card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between align-items-start">
+
+                            <div>
+                                <h5 class="card-title">
+                                    🔔 {{ alerta.event_type }}
+                                </h5>
+
+                                <p class="text-muted mb-2">
+                                    {{ alerta.description or "Sin descripción" }}
+                                </p>
+                            </div>
+
+                            <span class="badge bg-warning text-dark">
+                                {{ alerta.status }}
+                            </span>
+
+                        </div>
+
+                        <hr>
+
+                        <p class="mb-1">
+                            <strong>🐄 Lote:</strong>
+                            {{ alerta.lot_name }}
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>🌱 Especie:</strong>
+                            {{ alerta.species }}
+                        </p>
+
+                        <p class="mb-0">
+                            <strong>📅 Fecha:</strong>
+                            {{ alerta.scheduled_date }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <div style="font-size: 50px;">
+                    ✅
+                </div>
+
+                <h3 class="mt-3">
+                    No tienes alertas pendientes
+                </h3>
+
+                <p class="text-muted">
+                    Todos tus eventos programados están al día.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

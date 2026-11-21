@@ -423,6 +423,10 @@ button:disabled {
     margin-bottom: 25px;
 }
 
+.stats-grid .stat-card:last-child {
+    grid-column: span 1;
+}
+
 .stat-card,
 .panel {
     background: white;

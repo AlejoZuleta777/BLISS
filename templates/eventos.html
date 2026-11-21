@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+        <h1>Eventos</h1>
+
+        <p>
+            Programa y consulta eventos de tus unidades productivas.
+        </p>
+    </div>
+
+
+    <!-- ================================== -->
+    <!-- REGISTRAR EVENTO -->
+    <!-- ================================== -->
+
+    <div class="card">
+
+        <h2>Registrar evento</h2>
+
+        <form method="POST">
+
+            <div class="form-group">
+
+                <label for="lot_id">
+                    Lote *
+                </label>
+
+                <select
+                    name="lot_id"
+                    id="lot_id"
+                    required
+                >
+
+                    <option value="">
+                        Seleccionar lote
+                    </option>
+
+                    {% for lote in lotes %}
+
+                    <option value="{{ lote.id }}">
+                        {{ lote.name }} - {{ lote.species }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="event_type">
+                    Tipo de evento *
+                </label>
+
+                <input
+                    type="text"
+                    name="event_type"
+                    id="event_type"
+                    placeholder="Ej: Vacunación, revisión, alimentación..."
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="scheduled_date">
+                    Fecha *
+                </label>
+
+                <input
+                    type="date"
+                    name="scheduled_date"
+                    id="scheduled_date"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="description">
+                    Descripción
+                </label>
+
+                <textarea
+                    name="description"
+                    id="description"
+                    rows="4"
+                    placeholder="Describe el evento..."
+                ></textarea>
+
+            </div>
+
+
+            <button type="submit">
+                Registrar evento
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================================== -->
+    <!-- LISTADO DE EVENTOS -->
+    <!-- ================================== -->
+
+    <div class="card">
+
+        <h2>Eventos programados</h2>
+
+        {% if eventos %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Fecha</th>
+                        <th>Evento</th>
+                        <th>Lote</th>
+                        <th>Especie</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for evento in eventos %}
+
+                    <tr>
+
+                        <td>
+                            {{ evento.scheduled_date }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ evento.event_type }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ evento.lot_name }}
+                        </td>
+
+                        <td>
+                            {{ evento.species }}
+                        </td>
+
+                        <td>
+                            {{ evento.description or "Sin descripción" }}
+                        </td>
+
+                        <td>
+
+                            {% if evento.status == "PENDIENTE" %}
+
+                                <span class="badge">
+                                    Pendiente
+                                </span>
+
+                            {% else %}
+
+                                {{ evento.status }}
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <p>
+            No hay eventos registrados todavía.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

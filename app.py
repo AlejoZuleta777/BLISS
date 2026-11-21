@@ -215,16 +215,46 @@ def dashboard():
         )
         total_insumos = cursor.fetchone()["total"]
 
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM production_records p
+            INNER JOIN animal_lots l ON p.lot_id = l.id
+            INNER JOIN production_units u ON l.unit_id = u.id
+            WHERE u.user_id = %s
+            """,
+            (session["user_id"],)
+        )
+        total_produccion = cursor.fetchone()["total"]
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM scheduled_events e
+            INNER JOIN animal_lots l ON e.lot_id = l.id
+            INNER JOIN production_units u ON l.unit_id = u.id
+            WHERE u.user_id = %s
+            AND e.status = 'PENDIENTE'
+            """,
+            (session["user_id"],)
+        )
+        total_eventos = cursor.fetchone()["total"]
+
+        # ALERTAS PENDIENTES
+        total_alertas = total_eventos
+
         return render_template(
             "dashboard.html",
             total_unidades=total_unidades,
-            total_insumos=total_insumos
+            total_insumos=total_insumos,
+            total_produccion=total_produccion,
+            total_eventos=total_eventos,
+            total_alertas=total_alertas
         )
 
     finally:
         cursor.close()
         conexion.close()
-
 
 
 
@@ -1645,6 +1675,215 @@ def registrar_gasto():
 
     return redirect(url_for("finanzas"))
             
+
+# ==================================
+# EVENTOS PROGRAMADOS
+# ==================================
+
+@app.route("/eventos", methods=["GET", "POST"])
+@login_requerido
+def eventos():
+
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+
+    user_id = session["user_id"]
+
+    try:
+
+        
+
+        # ==================================
+        # REGISTRAR EVENTO
+        # ==================================
+
+        if request.method == "POST":
+
+            lot_id = request.form.get("lot_id")
+            event_type = request.form.get("event_type")
+            scheduled_date = request.form.get("scheduled_date")
+            description = request.form.get("description")
+
+            if not lot_id or not event_type or not scheduled_date:
+                flash("Completa los campos obligatorios.", "danger")
+                return redirect(url_for("eventos"))
+
+            cursor.execute("""
+                SELECT l.id
+                FROM animal_lots l
+                INNER JOIN production_units u
+                    ON l.unit_id = u.id
+                WHERE l.id = %s
+                  AND u.user_id = %s
+            """, (lot_id, user_id))
+
+            lote = cursor.fetchone()
+
+            if not lote:
+                flash("El lote seleccionado no es válido.", "danger")
+                return redirect(url_for("eventos"))
+
+            cursor.execute("""
+                INSERT INTO scheduled_events
+                (
+                    lot_id,
+                    event_type,
+                    scheduled_date,
+                    description,
+                    status
+                )
+                VALUES (%s, %s, %s, %s, 'PENDIENTE')
+            """, (
+                lot_id,
+                event_type,
+                scheduled_date,
+                description
+            ))
+
+            conn.commit()
+
+            flash("Evento registrado correctamente.", "success")
+
+            return redirect(url_for("eventos"))
+
+        
+
+        # ==================================
+        # CARGAR LOTES
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                l.id,
+                l.name,
+                s.name AS species
+            FROM animal_lots l
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            INNER JOIN species s
+                ON l.species_id = s.id
+            WHERE u.user_id = %s
+            ORDER BY l.name
+        """, (user_id,))
+
+        lotes = cursor.fetchall()
+
+        # ==================================
+        # CARGAR EVENTOS
+        # ==================================
+
+        cursor.execute("""
+            SELECT
+                e.id,
+                e.event_type,
+                e.scheduled_date,
+                e.description,
+                e.status,
+                l.name AS lot_name,
+                s.name AS species
+            FROM scheduled_events e
+            INNER JOIN animal_lots l
+                ON e.lot_id = l.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            INNER JOIN species s
+                ON l.species_id = s.id
+            WHERE u.user_id = %s
+            ORDER BY e.scheduled_date ASC, e.id DESC
+        """, (user_id,))
+
+        eventos_registrados = cursor.fetchall()
+
+        return render_template(
+            "eventos.html",
+            lotes=lotes,
+            eventos=eventos_registrados
+        )
+
+    except Exception as e:
+
+        conn.rollback()
+
+        print("ERROR EN EVENTOS:", e)
+
+        flash(
+            f"No fue posible completar la operación: {str(e)}",
+            "danger"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        cursor.close()
+        conn.close()
+
+
+# ==========================================
+# ALERTAS
+# ==========================================
+
+@app.route("/alertas")
+@login_requerido
+def alertas():
+
+    conexion = None
+    cursor = None
+
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                e.id,
+                e.event_type,
+                e.scheduled_date,
+                e.description,
+                e.status,
+                l.name AS lot_name,
+                s.name AS species
+            FROM scheduled_events e
+            INNER JOIN animal_lots l
+                ON e.lot_id = l.id
+            INNER JOIN production_units u
+                ON l.unit_id = u.id
+            INNER JOIN species s
+                ON l.species_id = s.id
+            WHERE u.user_id = %s
+              AND e.status = 'PENDIENTE'
+            ORDER BY e.scheduled_date ASC, e.id DESC
+        """, (session["user_id"],))
+
+        alertas = cursor.fetchall()
+
+        return render_template(
+            "alertas.html",
+            alertas=alertas
+        )
+
+    except Exception as e:
+
+        print("ERROR EN ALERTAS:", e)
+
+        flash(
+            f"No fue posible cargar las alertas: {str(e)}",
+            "danger"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conexion:
+            conexion.close()
+
+
+
+
 
 # ==========================================
 # REPORTES
