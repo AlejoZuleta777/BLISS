@@ -1487,8 +1487,8 @@ def mortalidad():
 
 
 # ==================================
-        # Finanzas
-        # ==================================
+# Finanzas
+# ==================================
 
 @app.route("/finanzas")
 def finanzas():
@@ -1496,18 +1496,31 @@ def finanzas():
     cursor = None
 
     try:
+        # Verificar usuario
+        if "user_id" not in session:
+            flash("Debes iniciar sesión para acceder a Finanzas.", "error")
+            return redirect(url_for("login"))
+
+        user_id = session["user_id"]
+
         conexion = conectar_bd()
         cursor = conexion.cursor(dictionary=True)
 
-        # Unidades productivas
+        # ==================================
+        # Unidades productivas DEL USUARIO
+        # ==================================
         cursor.execute("""
             SELECT id, name
             FROM production_units
+            WHERE user_id = %s
             ORDER BY name
-        """)
+        """, (user_id,))
+
         unidades = cursor.fetchall()
 
-        # Ingresos
+        # ==================================
+        # Ingresos DEL USUARIO
+        # ==================================
         cursor.execute("""
             SELECT
                 i.id,
@@ -1518,13 +1531,19 @@ def finanzas():
                 i.income_date,
                 i.description
             FROM incomes i
+            INNER JOIN production_units u
+                ON i.unit_id = u.id
+            WHERE u.user_id = %s
             ORDER BY i.income_date DESC, i.id DESC
-        """)
+        """, (user_id,))
+
         ingresos = cursor.fetchall()
 
-        # Gastos
+        # ==================================
+        # Gastos DEL USUARIO
+        # ==================================
         cursor.execute("""
-            SELECT 
+            SELECT
                 e.id,
                 e.unit_id,
                 e.lot_id,
@@ -1534,23 +1553,43 @@ def finanzas():
                 e.expense_date,
                 e.description
             FROM expenses e
+            INNER JOIN production_units u
+                ON e.unit_id = u.id
+            WHERE u.user_id = %s
             ORDER BY e.expense_date DESC, e.id DESC
-        """)
+        """, (user_id,))
+
         gastos = cursor.fetchall()
 
-        # Totales
+        # ==================================
+        # Total ingresos DEL USUARIO
+        # ==================================
         cursor.execute("""
-            SELECT COALESCE(SUM(amount), 0) AS total
-            FROM incomes
-        """)
+            SELECT COALESCE(SUM(i.amount), 0) AS total
+            FROM incomes i
+            INNER JOIN production_units u
+                ON i.unit_id = u.id
+            WHERE u.user_id = %s
+        """, (user_id,))
+
         total_ingresos = cursor.fetchone()["total"]
 
+        # ==================================
+        # Total gastos DEL USUARIO
+        # ==================================
         cursor.execute("""
-            SELECT COALESCE(SUM(amount), 0) AS total
-            FROM expenses
-        """)
+            SELECT COALESCE(SUM(e.amount), 0) AS total
+            FROM expenses e
+            INNER JOIN production_units u
+                ON e.unit_id = u.id
+            WHERE u.user_id = %s
+        """, (user_id,))
+
         total_gastos = cursor.fetchone()["total"]
 
+        # ==================================
+        # Balance
+        # ==================================
         saldo = total_ingresos - total_gastos
 
         return render_template(
@@ -1559,7 +1598,8 @@ def finanzas():
             gastos=gastos,
             total_ingresos=total_ingresos,
             total_gastos=total_gastos,
-            saldo=saldo
+            saldo=saldo,
+            unidades=unidades
         )
 
     except Exception as e:
@@ -1570,58 +1610,13 @@ def finanzas():
     finally:
         if cursor:
             cursor.close()
-
-
-@app.route("/finanzas/ingreso", methods=["POST"])
-def registrar_ingreso():
-    conexion = None
-    cursor = None
-
-    try:
-        unit_id = request.form.get("unit_id")
-        lot_id = request.form.get("lot_id") or None
-        concept = request.form.get("concept")
-        amount = request.form.get("amount")
-        income_date = request.form.get("income_date")
-        description = request.form.get("description")
-
-        if not unit_id or not concept or not amount or not income_date:
-            flash("Completa los campos obligatorios del ingreso.", "error")
-            return redirect(url_for("finanzas"))
-
-        conexion = conectar_bd()
-        cursor = conexion.cursor()
-
-        cursor.execute("""
-            INSERT INTO incomes
-            (unit_id, lot_id, concept, amount, income_date, description)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            unit_id,
-            lot_id,
-            concept,
-            amount,
-            income_date,
-            description
-        ))
-
-        conexion.commit()
-
-        flash("Ingreso registrado correctamente.", "success")
-
-    except Exception as e:
         if conexion:
-            conexion.rollback()
+            conexion.close()
 
-        print("ERROR REGISTRANDO INGRESO:", e)
-        flash("No fue posible registrar el ingreso.", "error")
 
-    finally:
-        if cursor:
-            cursor.close()
-
-    return redirect(url_for("finanzas"))
-
+# ==================================
+# Registrar gasto
+# ==================================
 
 @app.route("/finanzas/gasto", methods=["POST"])
 def registrar_gasto():
@@ -1629,6 +1624,13 @@ def registrar_gasto():
     cursor = None
 
     try:
+        # Verificar usuario
+        if "user_id" not in session:
+            flash("Debes iniciar sesión para registrar un gasto.", "error")
+            return redirect(url_for("login"))
+
+        user_id = session["user_id"]
+
         unit_id = request.form.get("unit_id")
         lot_id = request.form.get("lot_id") or None
         concept = request.form.get("concept")
@@ -1644,6 +1646,26 @@ def registrar_gasto():
         conexion = conectar_bd()
         cursor = conexion.cursor()
 
+        # ==================================
+        # Verificar que la unidad pertenece
+        # al usuario conectado
+        # ==================================
+        cursor.execute("""
+            SELECT id
+            FROM production_units
+            WHERE id = %s
+            AND user_id = %s
+        """, (unit_id, user_id))
+
+        unidad = cursor.fetchone()
+
+        if not unidad:
+            flash("No tienes permiso para usar esa unidad productiva.", "error")
+            return redirect(url_for("finanzas"))
+
+        # ==================================
+        # Registrar gasto
+        # ==================================
         cursor.execute("""
             INSERT INTO expenses
             (unit_id, lot_id, concept, category, amount, expense_date, description)
@@ -1672,6 +1694,8 @@ def registrar_gasto():
     finally:
         if cursor:
             cursor.close()
+        if conexion:
+            conexion.close()
 
     return redirect(url_for("finanzas"))
             
@@ -1712,9 +1736,9 @@ def eventos():
                 SELECT l.id
                 FROM animal_lots l
                 INNER JOIN production_units u
-                    ON l.unit_id = u.id
+                ON l.unit_id = u.id
                 WHERE l.id = %s
-                  AND u.user_id = %s
+                AND u.user_id = %s
             """, (lot_id, user_id))
 
             lote = cursor.fetchone()
